@@ -1,1 +1,10 @@
 project_id = "uxcepgelskfctvwtteht"
+
+[functions.vapi-webhook]
+verify_jwt = false
+
+[functions.generate-report]
+verify_jwt = false
+
+[functions.vapi-call-details]
+verify_jwt = false

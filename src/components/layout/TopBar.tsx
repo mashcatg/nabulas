@@ -7,7 +7,7 @@ export function TopBar() {
   const { user } = useAuth();
   return (
     <header className="sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container h-14 flex items-center justify-between">
+      <div className="h-14 flex items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="hover-scale" />
           <span className="font-semibold tracking-tight">Nabulas</span>

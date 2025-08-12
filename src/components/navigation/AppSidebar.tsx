@@ -3,10 +3,13 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, MoreHorizontal, Home, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export function AppSidebar() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const chats = user ? [] : [];
 
@@ -36,7 +39,27 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
-            <Button variant="pill" className="w-full justify-start">
+            <Button
+              variant="pill"
+              className="w-full justify-start"
+              onClick={async () => {
+                if (!user) {
+                  toast({ title: "Sign in required", description: "Please sign in to create a conversation." });
+                  return;
+                }
+                const { data, error } = await supabase
+                  .from("conversations")
+                  .insert({ user_id: user.id, title: "New Conversation" })
+                  .select("id")
+                  .maybeSingle();
+                if (error || !data?.id) {
+                  console.error(error);
+                  toast({ title: "Failed to create", description: "Could not create conversation." });
+                  return;
+                }
+                navigate(`/chat/${data.id}`);
+              }}
+            >
               <PlusCircle /> New Conversation
             </Button>
           </SidebarGroupContent>

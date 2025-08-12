@@ -11,7 +11,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthGate } from "@/components/AuthGate";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
-
+import { VoiceProvider } from "@/components/voice/VoiceCallManager";
+ 
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -22,16 +23,18 @@ const App = () => (
       <BrowserRouter>
         <ThemeProvider>
           <AuthProvider>
-            <AppLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/chat/:conversationId" element={<Chat />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <AuthGate />
-            </AppLayout>
+            <VoiceProvider>
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/chat/:conversationId" element={<Chat />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <AuthGate />
+              </AppLayout>
+            </VoiceProvider>
           </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>

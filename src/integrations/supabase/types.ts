@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          assistant_id: string | null
+          created_at: string
+          duration: number | null
+          id: string
+          is_public: boolean
+          metadata: Json | null
+          patient_report: Json | null
+          summary: string | null
+          title: string | null
+          transcript: Json | null
+          user_id: string
+          vapi_call_id: string | null
+        }
+        Insert: {
+          assistant_id?: string | null
+          created_at?: string
+          duration?: number | null
+          id?: string
+          is_public?: boolean
+          metadata?: Json | null
+          patient_report?: Json | null
+          summary?: string | null
+          title?: string | null
+          transcript?: Json | null
+          user_id: string
+          vapi_call_id?: string | null
+        }
+        Update: {
+          assistant_id?: string | null
+          created_at?: string
+          duration?: number | null
+          id?: string
+          is_public?: boolean
+          metadata?: Json | null
+          patient_report?: Json | null
+          summary?: string | null
+          title?: string | null
+          transcript?: Json | null
+          user_id?: string
+          vapi_call_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

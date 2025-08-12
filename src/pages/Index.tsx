@@ -1,4 +1,5 @@
 import VoiceControls from "@/components/voice/VoiceControls";
+import { useVoice } from "@/components/voice/VoiceCallManager";
 
 const Index = () => {
   return (
