@@ -1,14 +1,19 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import VoiceControls from "@/components/voice/VoiceControls";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <main className="relative min-h-[calc(100vh-7rem)] flex flex-col items-center justify-center text-center">
+      <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">Nabulas Healthcare Voice Assistant</h1>
+      <p className="text-muted-foreground max-w-2xl mb-10">
+        Start secure, real-time conversations with an AI healthcare assistant. Sign in to begin.
+      </p>
+      <div className="relative">
+        <div className="h-28 w-28 rounded-full" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }} />
       </div>
-    </div>
+      <VoiceControls />
+    </main>
   );
 };
 
 export default Index;
+
