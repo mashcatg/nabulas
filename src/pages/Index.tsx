@@ -10,7 +10,7 @@ const Index = () => {
       <div className="relative">
         <div className="h-28 w-28 rounded-full" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }} />
       </div>
-      <VoiceControls />
+      <VoiceControls layout="center" />
     </main>
   );
 };

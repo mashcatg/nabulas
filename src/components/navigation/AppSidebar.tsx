@@ -1,8 +1,9 @@
 import { SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreHorizontal } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Home, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { NavLink } from "react-router-dom";
 
 export function AppSidebar() {
   const { user } = useAuth();
@@ -17,6 +18,21 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="space-y-1">
+              <NavLink to="/" end className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}`}>
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </NavLink>
+              <NavLink to="/profile" className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}`}>
+                <User className="h-4 w-4" />
+                <span>Profile</span>
+              </NavLink>
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
