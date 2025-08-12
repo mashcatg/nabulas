@@ -29,10 +29,10 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
         {muted ? <MicOff /> : <Mic />}
       </Button>
       <Button
-        variant="hero"
+        variant={active ? "destructive" : "hero"}
         size="round"
         onClick={() => setActive((a) => !a)}
-        className={`${active ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"} ring-2 ring-ring shadow-md`}
+        className="ring-2 ring-ring shadow-md"
         aria-pressed={active}
         aria-label={active ? "End call" : "Start call"}
       >
