@@ -193,6 +193,20 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
 
 export function useVoice() {
   const ctx = useContext(VoiceContext);
-  if (!ctx) throw new Error("useVoice must be used within a VoiceProvider");
-  return ctx;
+  if (ctx) return ctx;
+
+  console.warn("useVoice was called outside of VoiceProvider. Returning a no-op stub to prevent crashes.");
+
+  // Safe no-op stub: prevents runtime crashes if provider hasn't mounted yet (e.g., during HMR)
+  return {
+    active: false,
+    muted: false,
+    captions: true,
+    duration: 0,
+    transcript: [],
+    startCall: async () => console.warn("[useVoice stub] startCall() called without provider."),
+    endCall: async () => console.warn("[useVoice stub] endCall() called without provider."),
+    toggleMute: () => console.warn("[useVoice stub] toggleMute() called without provider."),
+    toggleCaptions: () => console.warn("[useVoice stub] toggleCaptions() called without provider."),
+  } as VoiceContextValue;
 }
