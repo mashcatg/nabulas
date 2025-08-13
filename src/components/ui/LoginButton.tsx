@@ -9,10 +9,10 @@ export function LoginButton() {
   return (
     <>
       <Button 
-        variant="outline" 
+        variant="default" 
         size="sm" 
         onClick={() => setShowAuth(true)}
-        className="hover-scale"
+        className="hover:opacity-90 transition-opacity duration-200"
       >
         <LogIn className="h-4 w-4 mr-2" />
         Sign In

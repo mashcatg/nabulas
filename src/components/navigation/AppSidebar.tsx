@@ -41,24 +41,25 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <Button
               variant="pill"
-              className="w-full justify-start"
-              onClick={async () => {
-                if (!user) {
-                  toast({ title: "Sign in required", description: "Please sign in to create a conversation." });
-                  return;
-                }
-                const { data, error } = await supabase
-                  .from("conversations")
-                  .insert({ user_id: user.id, title: "New Conversation" })
-                  .select("id")
-                  .maybeSingle();
-                if (error || !data?.id) {
-                  console.error(error);
-                  toast({ title: "Failed to create", description: "Could not create conversation." });
-                  return;
-                }
-                navigate(`/chat/${data.id}`);
-              }}
+              className="w-full b justify-start"
+              // onClick={async () => {
+              //   if (!user) {
+              //     toast({ title: "Sign in required", description: "Please sign in to create a conversation." });
+              //     return;
+              //   }
+              //   const { data, error } = await supabase
+              //     .from("conversations")
+              //     .insert({ user_id: user.id, title: "New Conversation" })
+              //     .select("id")
+              //     .maybeSingle();
+              //   if (error || !data?.id) {
+              //     console.error(error);
+              //     toast({ title: "Failed to create", description: "Could not create conversation." });
+              //     return;
+              //   }
+              //   navigate(`/chat/${data.id}`);
+              // }}
+              onClick={() => navigate("/")}
             >
               <PlusCircle /> New Conversation
             </Button>
@@ -85,7 +86,7 @@ export function AppSidebar() {
                 </div>
               )}
               {conversations.map((c) => (
-                <div key={c.id} className="flex items-center justify-between px-2 py-2 rounded-md hover:bg-accent">
+                <div key={c.id} className="flex items-center justify-between px-2 py-0 rounded-md hover:bg-accent">
                   <button className="text-left truncate flex-1" onClick={() => navigate(`/chat/${c.id}`)}>
                     {c.title || `Conversation ${c.id.slice(0, 6)}`}
                   </button>

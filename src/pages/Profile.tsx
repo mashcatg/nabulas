@@ -67,7 +67,12 @@ const Profile = () => {
     );
   }
 
-  const stats = [
+  // Ensure weeklyActivity is an array before reducing
+const weeklyActivityCount = Array.isArray(weeklyActivity) 
+  ? weeklyActivity.reduce((sum, day) => sum + (day?.conversations || 0), 0)
+  : 0;
+
+const stats = [
     {
       title: "Total Conversations",
       value: totalConversations.toString(),

@@ -11,15 +11,15 @@ export function ThemeSwitcher() {
   ];
 
   return (
-    <div className="inline-flex items-center rounded-full border p-0.5">
+    <div className="inline-flex items-center rounded-full border p-[3px]">
       {options.map((opt) => {
         const Icon = opt.icon;
         return (
           <Button
             key={opt.key}
-            variant={theme === opt.key ? "secondary" : "ghost"}
-            size="sm"
-            className={`rounded-full px-3 transition-colors ${theme === opt.key ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+            variant={theme === opt.key ? "default" : "ghost"}
+            size="xs"
+            className={`rounded-full px-[5px] py-[5px] transition-colors ${theme === opt.key ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
             onClick={() => setTheme(opt.key as any)}
             aria-pressed={theme === opt.key}
             aria-label={opt.label}

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { LogIn } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 import { useEffect, useState } from "react";
 
 interface AuthGateProps {
@@ -45,8 +45,8 @@ export function AuthGate({ isOpen, onOpenChange }: AuthGateProps = {}) {
           </SheetHeader>
           <div className="py-4">
             <p className="text-sm text-muted-foreground mb-4">Sign in with Google to start secure healthcare voice sessions.</p>
-            <Button variant="default" size="lg" onClick={signInWithGoogle} className="w-full">
-              <LogIn /> Continue with Google
+            <Button variant="ghost" size="lg" onClick={signInWithGoogle} className="w-full">
+              <FcGoogle className="mr-2 h-4 w-4" /> Continue with Google
             </Button>
           </div>
         </SheetContent>
@@ -62,8 +62,8 @@ export function AuthGate({ isOpen, onOpenChange }: AuthGateProps = {}) {
         </DialogHeader>
         <div>
           <p className="text-sm text-muted-foreground mb-4">Sign in with Google to start secure healthcare voice sessions.</p>
-          <Button variant="default" size="lg" onClick={signInWithGoogle} className="w-full">
-            <LogIn /> Continue with Google
+          <Button variant="ghost" size="lg" onClick={signInWithGoogle} className="w-full">
+            <FcGoogle className="mr-2 h-4 w-4" /> Continue with Google
           </Button>
         </div>
       </DialogContent>
