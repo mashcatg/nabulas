@@ -36,20 +36,63 @@ serve(async (req) => {
       });
     }
 
-    // Optional DeepSeek support (stub friendly)
     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
 
     const { conversation_id = null, vapi_call_id = null, transcript = null } = await req.json();
 
-    // Very simple summary/report stub; replace with real LLM call later
-    let summary = "";
-    let patient_report: Record<string, unknown> = {};
+    // Pull Vapi call details if no transcript provided
+    let vapi: any = null;
+    let transcriptText = typeof transcript === "string" ? transcript : "";
+    try {
+      const VAPI_PRIVATE_KEY = Deno.env.get("VAPI_PRIVATE_KEY");
+      if (!transcriptText && vapi_call_id && VAPI_PRIVATE_KEY) {
+        const tryUrls = [
+          `https://api.vapi.ai/calls/${vapi_call_id}`,
+          `https://api.vapi.ai/call/${vapi_call_id}`,
+        ];
+        for (const url of tryUrls) {
+          const r = await fetch(url, { headers: { Authorization: `Bearer ${VAPI_PRIVATE_KEY}` } });
+          if (r.ok) {
+            vapi = await r.json();
+            break;
+          }
+        }
+        if (vapi) {
+          transcriptText = vapi?.transcript || "";
+          if (!transcriptText && Array.isArray(vapi?.messages)) {
+            const parts = vapi.messages
+              .filter((m: any) => m?.role && m?.message)
+              .map((m: any) => `${m.role === 'bot' ? 'AI' : 'User'}: ${m.message}`);
+            transcriptText = parts.join("\n");
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch Vapi details for report", e);
+    }
 
-    const transcriptText = typeof transcript === "string" ? transcript : JSON.stringify(transcript || {});
+    // Build DeepSeek prompt and parse structured JSON
+    let gen = {
+      title: "Conversation",
+      summary: "",
+      patient_report: {
+        title: "Patient Report",
+        key_points: [] as string[],
+        symptoms: [] as string[],
+        risks: [] as string[],
+        ai_recommendations: [] as string[],
+        actions: [] as string[],
+        follow_up_questions: [] as string[],
+        confidence: 0.5,
+      },
+    };
 
-    if (DEEPSEEK_API_KEY) {
+    const preferVapiSummary = vapi?.analysis?.summary || vapi?.summary || "";
+
+    if (DEEPSEEK_API_KEY && transcriptText) {
       try {
-        // Placeholder OpenAI-compatible request shape (adjust to DeepSeek API if needed)
+        const prompt = `You are a clinical AI scribe. From the transcript below, produce STRICT JSON with this exact shape:\n\n{\n  \"title\": string (<= 60 chars),\n  \"summary\": string (1-3 sentences),\n  \"patient_report\": {\n    \"title\": string,\n    \"key_points\": string[],\n    \"symptoms\": string[],\n    \"risks\": string[],\n    \"ai_recommendations\": string[],\n    \"actions\": string[],\n    \"follow_up_questions\": string[],\n    \"confidence\": number\n  }\n}\n\nNo prose, only JSON. Transcript:\n${transcriptText}`;
+
         const resp = await fetch("https://api.deepseek.com/chat/completions", {
           method: "POST",
           headers: {
@@ -59,42 +102,54 @@ serve(async (req) => {
           body: JSON.stringify({
             model: "deepseek-chat",
             messages: [
-              { role: "system", content: "You are a medical scribe. Output concise JSON only." },
-              { role: "user", content: `Create a short summary and a structured patient report JSON for this transcript: ${transcriptText}` },
+              { role: "system", content: "Return only JSON." },
+              { role: "user", content: prompt },
             ],
             temperature: 0.2,
           }),
         });
-        const data = await resp.json();
-        const content = data?.choices?.[0]?.message?.content || "";
-        summary = content.slice(0, 600);
-        patient_report = { raw: content };
+        const js = await resp.json();
+        const content: string = js?.choices?.[0]?.message?.content || "";
+        const jsonStr = (() => {
+          try { return JSON.parse(content), content; } catch { /* not pure JSON */ }
+          const start = content.indexOf("{");
+          const end = content.lastIndexOf("}");
+          if (start >= 0 && end > start) return content.slice(start, end + 1);
+          return "";
+        })();
+        if (jsonStr) {
+          const parsed = JSON.parse(jsonStr);
+          gen = {
+            title: parsed.title || gen.title,
+            summary: parsed.summary || "",
+            patient_report: { ...gen.patient_report, ...(parsed.patient_report || {}) },
+          };
+        }
       } catch (e) {
-        console.warn("DeepSeek call failed, using stub", e);
-        summary = "Auto-generated summary pending.";
-        patient_report = { title: "Patient Report", symptoms: [], ai_recommendations: [] };
+        console.warn("DeepSeek JSON parsing failed", e);
       }
-    } else {
-      summary = "Auto-generated summary pending.";
-      patient_report = { title: "Patient Report", symptoms: [], ai_recommendations: [] };
     }
 
-    // Update conversation by id or by call id
+    const finalTitle = gen.title || "Conversation";
+    const finalSummary = preferVapiSummary || gen.summary || "Auto-generated summary pending.";
+
+    const update: any = { title: finalTitle, summary: finalSummary, patient_report: gen.patient_report };
+
     if (conversation_id) {
       const { error } = await supabase
         .from("conversations")
-        .update({ summary, patient_report })
+        .update(update)
         .eq("id", conversation_id);
       if (error) throw error;
     } else if (vapi_call_id) {
       const { error } = await supabase
         .from("conversations")
-        .update({ summary, patient_report })
+        .update(update)
         .eq("vapi_call_id", vapi_call_id);
       if (error) throw error;
     }
 
-    return new Response(JSON.stringify({ ok: true }), {
+    return new Response(JSON.stringify({ ok: true, update }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {

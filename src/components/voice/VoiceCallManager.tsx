@@ -15,6 +15,8 @@ type VoiceContextValue = {
   captions: boolean;
   duration: number; // seconds
   transcript: TranscriptItem[];
+  connecting: boolean;
+  connectingMessage: string;
   startCall: () => Promise<void>;
   endCall: () => Promise<void>;
   toggleMute: () => void;
@@ -31,10 +33,14 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   const [captions, setCaptions] = useState(true);
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
+  const [connecting, setConnecting] = useState(false);
+  const [connectingMsg, setConnectingMsg] = useState("Connecting to AI…");
   const timerRef = useRef<number | null>(null);
   const vapiRef = useRef<any | null>(null);
   const callIdRef = useRef<string | null>(null);
   const captionsRef = useRef<boolean>(true);
+  const connectIntervalRef = useRef<number | null>(null);
+  const connectStartRef = useRef<number | null>(null);
 
   // Keep captionsRef in sync
   useEffect(() => {
@@ -86,6 +92,26 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
     setTranscript([]);
     setDuration(0);
 
+    // Show progressive connecting guidance until first audio/transcript arrives
+    setConnecting(true);
+    setConnectingMsg("Connecting to AI…");
+    connectStartRef.current = Date.now();
+    if (connectIntervalRef.current != null) window.clearInterval(connectIntervalRef.current);
+    connectIntervalRef.current = window.setInterval(() => {
+      const start = connectStartRef.current || Date.now();
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      const msg = elapsed >= 21
+        ? "Almost there…"
+        : elapsed >= 15
+        ? "Making transcripts ready…"
+        : elapsed >= 10
+        ? "Warming up voice model…"
+        : elapsed >= 5
+        ? "Preparing secure session…"
+        : "Connecting to AI…";
+      setConnectingMsg(msg);
+    }, 1000);
+
     // Try to init Vapi (optional). If unavailable, we still run UI and create a placeholder row on end.
     const vapi = await ensureVapi();
     if (vapi) {
@@ -98,14 +124,38 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         // Core client-side events per Vapi Web SDK
         vapi.on('call-start', () => {
           setActive(true);
+          if (connectIntervalRef.current != null) {
+            window.clearInterval(connectIntervalRef.current);
+            connectIntervalRef.current = null;
+          }
+          setConnecting(false);
+        });
+        vapi.on('speech-start', () => {
+          if (connectIntervalRef.current != null) {
+            window.clearInterval(connectIntervalRef.current);
+            connectIntervalRef.current = null;
+          }
+          setConnecting(false);
         });
         vapi.on('call-end', () => {
           setActive(false);
+          if (connectIntervalRef.current != null) {
+            window.clearInterval(connectIntervalRef.current);
+            connectIntervalRef.current = null;
+          }
+          setConnecting(false);
         });
         vapi.on('message', (message: any) => {
           try {
-            if (message?.type === 'transcript' && message?.transcript && captionsRef.current) {
-              setTranscript((prev) => [...prev, { t: Date.now(), text: message.transcript }]);
+            if (message?.type === 'transcript' && message?.transcript) {
+              if (captionsRef.current) {
+                setTranscript((prev) => [...prev, { t: Date.now(), text: message.transcript }]);
+              }
+              if (connectIntervalRef.current != null) {
+                window.clearInterval(connectIntervalRef.current);
+                connectIntervalRef.current = null;
+              }
+              setConnecting(false);
             }
           } catch (e) {
             console.warn('VAPI message handler error', e);
@@ -137,6 +187,12 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("VAPI stop failed", e);
     }
+    // Clear connecting UI if any
+    if (connectIntervalRef.current != null) {
+      window.clearInterval(connectIntervalRef.current);
+      connectIntervalRef.current = null;
+    }
+    setConnecting(false);
 
     // Persist a conversation row with metadata and trigger analysis
     if (user) {
@@ -153,7 +209,7 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         // Fire-and-forget generate-report
         try {
           await supabase.functions.invoke("generate-report", {
-            body: { conversation_id: data.id, vapi_call_id: callId ?? null, transcript },
+            body: { conversation_id: data.id, vapi_call_id: callId ?? null },
           });
         } catch (e) {
           console.warn("generate-report invoke failed", e);
@@ -173,6 +229,8 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       captions,
       duration,
       transcript,
+      connecting,
+      connectingMessage: connectingMsg,
       startCall,
       endCall,
       toggleMute: () => {
@@ -197,7 +255,7 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         });
       },
     }),
-    [active, muted, captions, duration, transcript]
+    [active, muted, captions, duration, transcript, connecting, connectingMsg]
   );
 
   return <VoiceContext.Provider value={value}>{children}</VoiceContext.Provider>;
@@ -216,6 +274,8 @@ export function useVoice() {
     captions: true,
     duration: 0,
     transcript: [],
+    connecting: false,
+    connectingMessage: "",
     startCall: async () => console.warn("[useVoice stub] startCall() called without provider."),
     endCall: async () => console.warn("[useVoice stub] endCall() called without provider."),
     toggleMute: () => console.warn("[useVoice stub] toggleMute() called without provider."),

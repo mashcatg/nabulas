@@ -52,23 +52,36 @@ serve(async (req) => {
       });
     }
 
-    // Fetch from VAPI once access is validated
-    const resp = await fetch(`https://api.vapi.ai/calls/${vapi_call_id}`, {
-      headers: {
-        Authorization: `Bearer ${VAPI_PRIVATE_KEY}`,
-        "Content-Type": "application/json",
-      },
-    });
+    // Fetch from VAPI once access is validated (try /calls then fallback /call)
+    const tryEndpoints = [
+      `https://api.vapi.ai/calls/${vapi_call_id}`,
+      `https://api.vapi.ai/call/${vapi_call_id}`,
+    ];
 
-    if (!resp.ok) {
-      const text = await resp.text();
-      return new Response(JSON.stringify({ error: "Failed to fetch call details", details: text }), {
-        status: resp.status,
+    let data: any = null;
+    let lastErr: string | null = null;
+    for (const url of tryEndpoints) {
+      const resp = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${VAPI_PRIVATE_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (resp.ok) {
+        data = await resp.json();
+        break;
+      } else {
+        lastErr = await resp.text();
+      }
+    }
+
+    if (!data) {
+      return new Response(JSON.stringify({ error: "Failed to fetch call details", details: lastErr }), {
+        status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = await resp.json();
     return new Response(JSON.stringify({ ok: true, data }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
