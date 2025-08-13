@@ -15,6 +15,18 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const WEBHOOK_SECRET = Deno.env.get("VAPI_WEBHOOK_SECRET");
+    const INTERNAL_SECRET = Deno.env.get("REPORT_FUNCTION_SECRET");
+
+    // Verify webhook secret
+    const providedSecret = req.headers.get("x-webhook-secret");
+    if (!WEBHOOK_SECRET || providedSecret !== WEBHOOK_SECRET) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
     const payload = await req.json();
@@ -58,16 +70,19 @@ serve(async (req) => {
       if (error) throw error;
     }
 
-    // Optionally trigger report generation in the background
-    // Note: You can pass conversation id or vapi_call_id
-    try {
-      await fetch(`${SUPABASE_URL}/functions/v1/generate-report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-        body: JSON.stringify({ vapi_call_id, transcript }),
-      });
-    } catch (e) {
-      console.warn("generate-report invoke failed", e);
+    // Trigger report generation in the background (secured with internal secret)
+    if (INTERNAL_SECRET) {
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/generate-report`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-internal-secret": INTERNAL_SECRET, ...corsHeaders },
+          body: JSON.stringify({ vapi_call_id, transcript }),
+        });
+      } catch (e) {
+        console.warn("generate-report invoke failed", e);
+      }
+    } else {
+      console.warn("REPORT_FUNCTION_SECRET not set; skipping generate-report call");
     }
 
     return new Response(JSON.stringify({ ok: true, received: event || "event" }), {

@@ -15,7 +15,26 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const INTERNAL_SECRET = Deno.env.get("REPORT_FUNCTION_SECRET");
+
+    const authHeader = req.headers.get("Authorization");
+    const providedInternal = req.headers.get("x-internal-secret");
+    const isInternal = INTERNAL_SECRET && providedInternal === INTERNAL_SECRET;
+
+    // Build a Supabase client respecting caller privileges
+    const supabase = isInternal
+      ? createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+      : authHeader
+      ? createClient(SUPABASE_URL, ANON_KEY, { global: { headers: { Authorization: authHeader } } })
+      : null;
+
+    if (!supabase) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Optional DeepSeek support (stub friendly)
     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
