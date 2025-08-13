@@ -92,7 +92,7 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       try {
         // Use assistantId provided by config
         const assistantId = (callIdRef as any).assistantId;
-        const call = await vapi.start({ assistantId, metadata: { user_id: authUser.id } });
+        const call = await vapi.start({ assistant: { id: assistantId }, metadata: { user_id: authUser.id } });
         callIdRef.current = call?.id ?? null;
 
         vapi.on("speech", (ev: any) => {
