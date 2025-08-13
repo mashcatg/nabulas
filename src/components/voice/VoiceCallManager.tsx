@@ -34,6 +34,12 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   const timerRef = useRef<number | null>(null);
   const vapiRef = useRef<any | null>(null);
   const callIdRef = useRef<string | null>(null);
+  const captionsRef = useRef<boolean>(true);
+
+  // Keep captionsRef in sync
+  useEffect(() => {
+    captionsRef.current = captions;
+  }, [captions]);
 
   // Simple timer
   useEffect(() => {
@@ -69,13 +75,16 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
   };
 
   const startCall = async () => {
-    if (!user) {
+    // Resolve user with fallback to avoid race conditions
+    const { data: userData } = await supabase.auth.getUser();
+    const authUser = user ?? userData?.user ?? null;
+    if (!authUser) {
       toast({ title: "Sign in required", description: "Please sign in to start a call." });
       return;
     }
+
     setTranscript([]);
     setDuration(0);
-    setActive(true);
 
     // Try to init Vapi (optional). If unavailable, we still run UI and create a placeholder row on end.
     const vapi = await ensureVapi();
@@ -83,21 +92,27 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       try {
         // Use assistantId provided by config
         const assistantId = (callIdRef as any).assistantId;
-        const call = await vapi.start({ assistantId, metadata: { user_id: user.id } });
+        const call = await vapi.start({ assistantId, metadata: { user_id: authUser.id } });
         callIdRef.current = call?.id ?? null;
 
         vapi.on("speech", (ev: any) => {
           if (!ev?.text) return;
+          if (!captionsRef.current) return; // Respect captions toggle
           setTranscript((prev) => [...prev, { t: Date.now(), text: ev.text }]);
         });
+
+        setActive(true);
       } catch (err: any) {
         console.error("VAPI start error", err);
         toast({ title: "Call failed", description: err?.message ?? "Could not start the call" });
+        return;
       }
     } else {
       // Stub transcript simulation (minimal)
+      setActive(true);
       setTimeout(() => setTranscript((p) => [...p, { t: Date.now(), text: "Call started (stub)." }]), 600);
     }
+
     toast({ title: "Call started", description: "You can speak now." });
   };
 
@@ -148,8 +163,27 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       transcript,
       startCall,
       endCall,
-      toggleMute: () => setMuted((m) => !m),
-      toggleCaptions: () => setCaptions((c) => !c),
+      toggleMute: () => {
+        setMuted((m) => {
+          const next = !m;
+          try {
+            const vapi = vapiRef.current;
+            if (vapi?.setMuted) vapi.setMuted(next);
+            else if (next) vapi?.mute?.();
+            else vapi?.unmute?.();
+          } catch (e) {
+            console.warn("VAPI mute toggle failed", e);
+          }
+          return next;
+        });
+      },
+      toggleCaptions: () => {
+        setCaptions((c) => {
+          const next = !c;
+          captionsRef.current = next;
+          return next;
+        });
+      },
     }),
     [active, muted, captions, duration, transcript]
   );

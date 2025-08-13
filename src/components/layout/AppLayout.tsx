@@ -16,7 +16,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarInset>
           {/* Top bar */}
           <TopBar />
-          <div className="flex-1 px-4 md:px-8 pt-4 pb-20 animate-enter">
+          <div className="flex-1 px-4 md:px-8 pt-4 pb-20 animate-fade-in">
             {children}
           </div>
         </SidebarInset>

@@ -15,14 +15,14 @@ const Index = () => {
       </p>
       <div className="relative flex flex-col items-center gap-3">
         <div className="text-sm text-muted-foreground">{mm}:{ss}</div>
-        <div className="h-28 w-28 rounded-full pulse" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }} />
+        <div className="h-28 w-28 rounded-full" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }} />
         {captions && lastLine && (
           <div className="text-xs text-muted-foreground max-w-md px-3 py-2 rounded-md border animate-fade-in">
             {lastLine}
           </div>
         )}
       </div>
-      <VoiceControls layout="center" />
+      <VoiceControls />
     </main>
   );
 };

@@ -11,7 +11,7 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
 
   const containerCls =
     layout === "fixed"
-      ? "fixed inset-x-0 bottom-24 md:bottom-10 mx-auto flex items-center justify-center gap-6 w-full max-w-lg"
+      ? "fixed inset-x-0 bottom-6 md:bottom-8 mx-auto flex items-center justify-center gap-6 w-full max-w-lg"
       : "relative mx-auto flex items-center justify-center gap-6";
 
   return (
@@ -22,7 +22,6 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
         onClick={toggleMute}
         aria-pressed={muted}
         aria-label={muted ? "Unmute microphone" : "Mute microphone"}
-        className="hover-scale"
       >
         {muted ? <MicOff /> : <Mic />}
       </Button>
@@ -30,7 +29,7 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
         variant={"default"}
         size="round"
         onClick={active ? endCall : startCall}
-        className={`ring-2 ring-ring shadow-md ${active ? "pulse" : ""}`}
+        className="ring-2 ring-ring shadow-md"
         aria-pressed={active}
         aria-label={active ? "End call" : "Start call"}
       >
@@ -42,7 +41,7 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
         onClick={toggleCaptions}
         aria-pressed={captions}
         aria-label={captions ? "Hide captions" : "Show captions"}
-        className="hover-scale"
+        
       >
         <Captions />
       </Button>
