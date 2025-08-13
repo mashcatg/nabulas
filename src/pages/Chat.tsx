@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
+import { ShiningText } from "@/components/ui/shining-text";
 const Chat = () => {
   const { conversationId } = useParams();
 
@@ -86,7 +86,13 @@ const Chat = () => {
               <CardTitle>AI Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">{data.summary || <span className="text-muted-foreground">No summary yet.</span>}</p>
+              {data.summary ? (
+                <p className="text-sm">{data.summary}</p>
+              ) : (
+                <div className="text-sm text-muted-foreground">
+                  <ShiningText text="HextaAI is thinking..." />
+                </div>
+              )}
             </CardContent>
           </Card>
         </article>
@@ -97,29 +103,37 @@ const Chat = () => {
               <CardTitle>Patient Report</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <div>
-                <div className="font-medium">Title</div>
-                <div className="text-muted-foreground">{patient.title || "—"}</div>
-              </div>
-              <Separator />
-              <div>
-                <div className="font-medium">Detected Symptoms</div>
-                <ul className="list-disc pl-5 text-muted-foreground">
-                  {(patient.symptoms || []).map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                  {!patient.symptoms && <li className="list-none text-muted-foreground">—</li>}
-                </ul>
-              </div>
-              <div>
-                <div className="font-medium">AI Recommendations</div>
-                <ul className="list-disc pl-5 text-muted-foreground">
-                  {(patient.ai_recommendations || []).map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                  {!patient.ai_recommendations && <li className="list-none text-muted-foreground">—</li>}
-                </ul>
-              </div>
+              {!data.summary ? (
+                <div className="text-muted-foreground">
+                  <ShiningText text="Generating patient report..." />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <div className="font-medium">Title</div>
+                    <div className="text-muted-foreground">{patient.title || "—"}</div>
+                  </div>
+                  <Separator />
+                  <div>
+                    <div className="font-medium">Detected Symptoms</div>
+                    <ul className="list-disc pl-5 text-muted-foreground">
+                      {(patient.symptoms || []).map((s: string, i: number) => (
+                        <li key={i}>{s}</li>
+                      ))}
+                      {!patient.symptoms && <li className="list-none text-muted-foreground">—</li>}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="font-medium">AI Recommendations</div>
+                    <ul className="list-disc pl-5 text-muted-foreground">
+                      {(patient.ai_recommendations || []).map((s: string, i: number) => (
+                        <li key={i}>{s}</li>
+                      ))}
+                      {!patient.ai_recommendations && <li className="list-none text-muted-foreground">—</li>}
+                    </ul>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

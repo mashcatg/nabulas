@@ -1,6 +1,6 @@
 import VoiceControls from "@/components/voice/VoiceControls";
 import { useVoice } from "@/components/voice/VoiceCallManager";
-
+import { ShiningText } from "@/components/ui/shining-text";
 const Index = () => {
   const { duration, transcript, captions } = useVoice();
   const mm = String(Math.floor(duration / 60)).padStart(2, "0");
@@ -18,11 +18,11 @@ const Index = () => {
         <div className="h-28 w-28 rounded-full" style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-glow)" }} />
         {captions && lastLine && (
           <div className="text-xs text-muted-foreground max-w-md px-3 py-2 rounded-md border animate-fade-in">
-            {lastLine}
+            <ShiningText text={lastLine} />
           </div>
         )}
       </div>
-      <VoiceControls />
+      <VoiceControls layout="center" />
     </main>
   );
 };

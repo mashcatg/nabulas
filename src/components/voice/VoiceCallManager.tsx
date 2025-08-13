@@ -2,11 +2,11 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 // VAPI Web SDK (optional; we keep it lazy and guarded)
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Vapi from "@vapi-ai/web";
-
 export type TranscriptItem = { t: number; text: string };
 
 type VoiceContextValue = {
@@ -25,12 +25,12 @@ const VoiceContext = createContext<VoiceContextValue | undefined>(undefined);
 
 export function VoiceProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [active, setActive] = useState(false);
   const [muted, setMuted] = useState(false);
   const [captions, setCaptions] = useState(true);
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
-
   const timerRef = useRef<number | null>(null);
   const vapiRef = useRef<any | null>(null);
   const callIdRef = useRef<string | null>(null);
@@ -147,6 +147,7 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {
           console.warn("generate-report invoke failed", e);
         }
+        navigate(`/chat/${data.id}`);
         toast({ title: "Conversation saved", description: "Analysis will be ready shortly in Chat." });
       }
     }
