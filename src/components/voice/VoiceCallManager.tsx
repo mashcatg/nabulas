@@ -49,14 +49,18 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
     };
   }, [active]);
 
-  // Lazy init Vapi only when available (public key may be provided later)
+  // Lazy init Vapi only when available via edge function providing publishable key
   const ensureVapi = async () => {
     if (vapiRef.current) return vapiRef.current;
     try {
-      // In a future step, fetch a publishable key from an Edge Function if needed
-      const publicKey = null; // placeholder; use edge function to retrieve if required
-      if (!publicKey) return null; // run in stub mode without SDK
-      vapiRef.current = new Vapi(publicKey);
+      const { data, error } = await supabase.functions.invoke("vapi-config");
+      if (error || !data?.publicKey) {
+        console.warn("VAPI config not available", error);
+        return null; // run in stub mode without SDK
+      }
+      // Store assistant id for later
+      (callIdRef as any).assistantId = data.assistantId;
+      vapiRef.current = new Vapi(data.publicKey);
       return vapiRef.current;
     } catch (e) {
       console.warn("VAPI init failed, running in stub mode", e);
@@ -77,8 +81,9 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
     const vapi = await ensureVapi();
     if (vapi) {
       try {
-        // Example only: replace with real start params as needed
-        const call = await vapi.start({ assistant: { name: "Assistant" }, metadata: { user_id: user.id } });
+        // Use assistantId provided by config
+        const assistantId = (callIdRef as any).assistantId;
+        const call = await vapi.start({ assistantId, metadata: { user_id: user.id } });
         callIdRef.current = call?.id ?? null;
 
         vapi.on("speech", (ev: any) => {
@@ -107,18 +112,27 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       console.warn("VAPI stop failed", e);
     }
 
-    // Persist a conversation row (minimal) so the Chat page has something to show
+    // Persist a conversation row with metadata and trigger analysis
     if (user) {
+      const assistantId = (callIdRef as any).assistantId ?? null;
       const { data, error } = await supabase
         .from("conversations")
-        .insert({ user_id: user.id, duration, vapi_call_id: callId ?? null, title: "Conversation" })
+        .insert({ user_id: user.id, duration, vapi_call_id: callId ?? null, title: "Conversation", assistant_id: assistantId, transcript })
         .select("id")
         .maybeSingle();
       if (error) {
         console.error(error);
         toast({ title: "Save failed", description: "Could not save conversation." });
       } else if (data?.id) {
-        toast({ title: "Conversation saved", description: "You can view details in the Chat page." });
+        // Fire-and-forget generate-report
+        try {
+          await supabase.functions.invoke("generate-report", {
+            body: { conversation_id: data.id, vapi_call_id: callId ?? null, transcript },
+          });
+        } catch (e) {
+          console.warn("generate-report invoke failed", e);
+        }
+        toast({ title: "Conversation saved", description: "Analysis will be ready shortly in Chat." });
       }
     }
 

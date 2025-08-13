@@ -1,15 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Captions, Phone, PhoneOff } from "lucide-react";
-import { useState } from "react";
+import { useVoice } from "./VoiceCallManager";
 
 type VoiceControlsProps = {
   layout?: "fixed" | "center";
 };
 
 export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) {
-  const [muted, setMuted] = useState(false);
-  const [captions, setCaptions] = useState(true);
-  const [active, setActive] = useState(false);
+  const { active, muted, captions, toggleMute, toggleCaptions, startCall, endCall } = useVoice();
 
   const containerCls =
     layout === "fixed"
@@ -21,7 +19,7 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
       <Button
         variant="pill"
         size="icon"
-        onClick={() => setMuted((m) => !m)}
+        onClick={toggleMute}
         aria-pressed={muted}
         aria-label={muted ? "Unmute microphone" : "Mute microphone"}
         className="hover-scale"
@@ -29,10 +27,10 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
         {muted ? <MicOff /> : <Mic />}
       </Button>
       <Button
-        variant={active ? "destructive" : "hero"}
+        variant={"default"}
         size="round"
-        onClick={() => setActive((a) => !a)}
-        className="ring-2 ring-ring shadow-md"
+        onClick={active ? endCall : startCall}
+        className={`ring-2 ring-ring shadow-md ${active ? "pulse" : ""}`}
         aria-pressed={active}
         aria-label={active ? "End call" : "Start call"}
       >
@@ -41,7 +39,7 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
       <Button
         variant="pill"
         size="icon"
-        onClick={() => setCaptions((c) => !c)}
+        onClick={toggleCaptions}
         aria-pressed={captions}
         aria-label={captions ? "Hide captions" : "Show captions"}
         className="hover-scale"

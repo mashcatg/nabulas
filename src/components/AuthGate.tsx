@@ -35,7 +35,7 @@ export function AuthGate() {
           </SheetHeader>
           <div className="py-4">
             <p className="text-sm text-muted-foreground mb-4">Sign in with Google to start secure healthcare voice sessions.</p>
-            <Button variant="hero" size="lg" onClick={signInWithGoogle} className="w-full">
+            <Button variant="default" size="lg" onClick={signInWithGoogle} className="w-full">
               <LogIn /> Continue with Google
             </Button>
           </div>
@@ -52,7 +52,7 @@ export function AuthGate() {
         </DialogHeader>
         <div>
           <p className="text-sm text-muted-foreground mb-4">Sign in with Google to start secure healthcare voice sessions.</p>
-          <Button variant="hero" size="lg" onClick={signInWithGoogle} className="w-full">
+          <Button variant="default" size="lg" onClick={signInWithGoogle} className="w-full">
             <LogIn /> Continue with Google
           </Button>
         </div>

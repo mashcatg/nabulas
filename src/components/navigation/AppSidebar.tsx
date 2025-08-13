@@ -6,12 +6,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useConversations } from "@/hooks/useConversations";
 
 export function AppSidebar() {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  const chats = user ? [] : [];
+  const { conversations, isLoading } = useConversations();
 
   return (
     <>
@@ -69,14 +69,26 @@ export function AppSidebar() {
           <SidebarGroupLabel>Recent Chats</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="space-y-1 max-h-[50vh] overflow-y-auto pr-1">
-              {chats.length === 0 && (
+              {!user && (
                 <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
-                  {user ? "No conversations yet." : "Sign in to view your conversations."}
+                  Sign in to view your conversations.
                 </div>
               )}
-              {chats.map((c) => (
+              {user && isLoading && (
+                <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
+                  Loading conversations...
+                </div>
+              )}
+              {user && !isLoading && conversations.length === 0 && (
+                <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
+                  No conversations yet.
+                </div>
+              )}
+              {conversations.map((c) => (
                 <div key={c.id} className="flex items-center justify-between px-2 py-2 rounded-md hover:bg-accent">
-                  <span className="truncate">{c.title}</span>
+                  <button className="text-left truncate flex-1" onClick={() => navigate(`/chat/${c.id}`)}>
+                    {c.title || `Conversation ${c.id.slice(0, 6)}`}
+                  </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="rounded-md">
@@ -84,9 +96,15 @@ export function AppSidebar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="z-50">
-                      <DropdownMenuItem>View</DropdownMenuItem>
-                      <DropdownMenuItem>Share</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/chat/${c.id}`)}>View</DropdownMenuItem>
+                      <DropdownMenuItem onClick={async () => {
+                        await supabase.from("conversations").update({ is_public: true }).eq("id", c.id);
+                        toast({ title: "Shared", description: "Conversation set to public." });
+                      }}>Share</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={async () => {
+                        await supabase.from("conversations").delete().eq("id", c.id);
+                        toast({ title: "Deleted", description: "Conversation removed." });
+                      }}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
