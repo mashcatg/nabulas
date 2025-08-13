@@ -4,9 +4,10 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 import { ShiningText } from "@/components/ui/shining-text";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MessageSkeleton, CardSkeleton } from "@/components/ui/skeletons";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -60,9 +61,9 @@ const Chat = () => {
       .update({ is_public: true })
       .eq("id", conversationId);
     if (error) {
-      toast({ title: "Share failed", description: "Could not share conversation." });
+      toast.error("Could not share conversation");
     } else {
-      toast({ title: "Link enabled", description: "Conversation is now public." });
+      toast.success("Conversation is now public");
       refetch();
     }
   };
@@ -74,16 +75,75 @@ const Chat = () => {
       .delete()
       .eq("id", conversationId);
     if (error) {
-      toast({ title: "Delete failed", description: "Could not delete conversation." });
+      toast.error("Could not delete conversation");
     } else {
-      toast({ title: "Conversation deleted" });
+      toast.success("Conversation deleted");
       // No redirect for now
     }
   };
 
-  if (isLoading) return <main className="py-6">Loading...</main>;
-  if (error) return <main className="py-6">Error loading conversation.</main>;
-  if (!data) return <main className="py-6">Conversation not found or not accessible.</main>;
+  if (isLoading) {
+    return (
+      <main className="py-6 space-y-6">
+        <div className="space-y-2 animate-fade-in">
+          <div className="h-8 w-64 bg-muted rounded animate-pulse" />
+          <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+          <div className="flex gap-2 mt-4">
+            <div className="h-9 w-16 bg-muted rounded animate-pulse" />
+            <div className="h-9 w-16 bg-muted rounded animate-pulse" />
+            <div className="h-9 w-24 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+        <section className="grid gap-6 md:grid-cols-3">
+          <article className="md:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Transcript</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MessageSkeleton count={6} />
+              </CardContent>
+            </Card>
+            <CardSkeleton />
+          </article>
+          <aside className="space-y-6">
+            <CardSkeleton />
+            <CardSkeleton />
+          </aside>
+        </section>
+      </main>
+    );
+  }
+  
+  if (error) {
+    return (
+      <main className="py-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-destructive mb-2">Error loading conversation</h2>
+              <p className="text-muted-foreground">Please try again later.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+  
+  if (!data) {
+    return (
+      <main className="py-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold mb-2">Conversation not found</h2>
+              <p className="text-muted-foreground">This conversation may not exist or is not accessible.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
 
   const isMobile = useIsMobile();
   const vapi = vapiDetails || {} as any;
@@ -165,7 +225,7 @@ const Chat = () => {
             </CardHeader>
             <CardContent>
               {vapiLoading ? (
-                <div className="text-sm text-muted-foreground">Fetching call details…</div>
+                <MessageSkeleton count={4} />
               ) : messages.length ? (
                 <div className="space-y-3">
                   {messages.map((m, i) => (
@@ -189,9 +249,9 @@ const Chat = () => {
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(transcriptStr);
-                        toast({ title: "Copied", description: "Transcript copied to clipboard." });
+                        toast.success("Transcript copied to clipboard");
                       } catch {
-                        toast({ title: "Copy failed", description: "Could not copy transcript.", variant: "destructive" });
+                        toast.error("Could not copy transcript");
                       }
                     }}
                   >

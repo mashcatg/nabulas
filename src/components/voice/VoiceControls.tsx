@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Captions, Phone, PhoneOff } from "lucide-react";
+import { Mic, MicOff, Captions, CaptionsOff, Phone, PhoneOff } from "lucide-react";
 import { useVoice } from "./VoiceCallManager";
 
 type VoiceControlsProps = {
@@ -11,8 +11,8 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
 
   const containerCls =
     layout === "fixed"
-      ? "fixed inset-x-0 bottom-6 md:bottom-8 mx-auto flex items-center justify-center gap-6 w-full max-w-lg"
-      : "relative mx-auto flex items-center justify-center gap-6";
+      ? "fixed inset-x-0 bottom-6 md:bottom-8 mx-auto flex items-center justify-center gap-8 w-full max-w-lg px-4"
+      : "relative mx-auto flex items-center justify-center gap-8";
 
   return (
     <div className={containerCls}>
@@ -41,9 +41,8 @@ export default function VoiceControls({ layout = "fixed" }: VoiceControlsProps) 
         onClick={toggleCaptions}
         aria-pressed={captions}
         aria-label={captions ? "Hide captions" : "Show captions"}
-        
       >
-        <Captions />
+        {captions ? <CaptionsOff /> : <Captions />}
       </Button>
     </div>
   );

@@ -7,14 +7,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogIn } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export function AuthGate() {
+interface AuthGateProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function AuthGate({ isOpen, onOpenChange }: AuthGateProps = {}) {
   const isMobile = useIsMobile();
   const { user, loading } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const open = isOpen !== undefined ? isOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
 
   useEffect(() => {
-    setOpen(!loading && !user);
-  }, [user, loading]);
+    if (isOpen === undefined) {
+      setInternalOpen(!loading && !user);
+    }
+  }, [user, loading, isOpen]);
 
   const signInWithGoogle = async () => {
     const redirectUrl = `${window.location.origin}/`;

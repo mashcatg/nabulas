@@ -8,7 +8,7 @@ const Index = () => {
   const lastLine = transcript.length ? transcript[transcript.length - 1].text : "";
 
   return (
-    <main className="relative min-h-[calc(100vh-7rem)] flex flex-col items-center justify-center text-center">
+    <main className="relative flex flex-col items-center justify-center text-center py-12 px-4">
       <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3 animate-fade-in">Nabulas Healthcare Voice Assistant</h1>
       <p className="text-muted-foreground max-w-2xl mb-10 animate-fade-in">
         Start secure, real-time conversations with an AI healthcare assistant. Sign in to begin.
@@ -29,7 +29,7 @@ const Index = () => {
         )}
 
       </div>
-      <div className="mt-6">
+      <div className="mt-8">
         <VoiceControls layout="center" />
       </div>
     </main>

@@ -6,9 +6,9 @@ function getInitials(name: string) {
   return initials || "NA";
 }
 
-export function AvatarWithFallback({ name, src }: { name: string; src?: string }) {
+export function AvatarWithFallback({ name, src, className }: { name: string; src?: string; className?: string }) {
   return (
-    <Avatar className="h-8 w-8">
+    <Avatar className={className || "h-8 w-8"}>
       <AvatarImage src={src} alt={name} className="object-cover" />
       <AvatarFallback className="bg-primary/10 text-primary font-medium">
         {getInitials(name)}
