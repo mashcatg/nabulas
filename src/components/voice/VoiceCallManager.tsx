@@ -92,13 +92,24 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       try {
         // Use assistantId provided by config
         const assistantId = (callIdRef as any).assistantId;
-        const call = await vapi.start({ assistant: { id: assistantId }, metadata: { user_id: authUser.id } });
+        const call = await vapi.start(assistantId);
         callIdRef.current = call?.id ?? null;
 
-        vapi.on("speech", (ev: any) => {
-          if (!ev?.text) return;
-          if (!captionsRef.current) return; // Respect captions toggle
-          setTranscript((prev) => [...prev, { t: Date.now(), text: ev.text }]);
+        // Core client-side events per Vapi Web SDK
+        vapi.on('call-start', () => {
+          setActive(true);
+        });
+        vapi.on('call-end', () => {
+          setActive(false);
+        });
+        vapi.on('message', (message: any) => {
+          try {
+            if (message?.type === 'transcript' && message?.transcript && captionsRef.current) {
+              setTranscript((prev) => [...prev, { t: Date.now(), text: message.transcript }]);
+            }
+          } catch (e) {
+            console.warn('VAPI message handler error', e);
+          }
         });
 
         setActive(true);
