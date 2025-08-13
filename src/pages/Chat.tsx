@@ -31,6 +31,10 @@ import { useMemo, useState } from "react";
 const Chat = () => {
   const navigate = useNavigate();
   const { conversationId } = useParams();
+  
+  // Move all hooks to the top level before any conditional returns
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["conversation", conversationId],
@@ -157,7 +161,6 @@ const Chat = () => {
     );
   }
 
-  const isMobile = useIsMobile();
   const vapi = vapiDetails || {} as any;
   const summaryText = vapi.summary || vapi.analysis?.summary || data.summary;
   const messages: Array<{ role: string; message: string; time?: number }>
@@ -166,7 +169,6 @@ const Chat = () => {
   const recordingUrl: string = vapi.recordingUrl || vapi.artifact?.recording?.mono?.combinedUrl || vapi.artifact?.recording?.mono?.assistantUrl;
   const stereoUrl: string = vapi.stereoRecordingUrl || vapi.artifact?.recording?.stereoUrl;
 
-  const [open, setOpen] = useState(false);
   const AudioShell = (
     <div className="space-y-3">
       {recordingUrl && (
