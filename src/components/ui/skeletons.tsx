@@ -5,13 +5,17 @@ export function CardSkeleton({ className }: { className?: string }) {
   return (
     <Card className={className}>
       <CardHeader className="space-y-2">
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-4 w-2/3 sm:w-1/2" />
+        <Skeleton className="h-3 w-1/2 sm:w-1/3" />
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-3">
         <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-4/5" />
-        <Skeleton className="h-3 w-3/5" />
+        <Skeleton className="h-3 w-full sm:w-4/5" />
+        <Skeleton className="h-3 w-4/5 sm:w-3/5" />
+        <div className="flex flex-wrap gap-2 mt-4">
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-20" />
+        </div>
       </CardContent>
     </Card>
   );

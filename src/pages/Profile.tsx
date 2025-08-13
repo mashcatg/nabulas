@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AvatarWithFallback } from "@/components/users/AvatarWithFallback";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { HealthInsights } from "@/components/ui/health-insights";
 import { Clock, MessageCircle, TrendingUp, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -212,56 +213,15 @@ const Profile = () => {
         </div>
 
         {/* Health Insights */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Health Insights</CardTitle>
-            <CardDescription>AI-powered analysis of your conversation history</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {profile?.health_insights ? (
-              <div className="space-y-6">
-                <div>
-                  <h4 className="font-semibold mb-2">Health Timeline</h4>
-                  <p className="text-muted-foreground">
-                    {typeof profile.health_insights === 'object' && profile.health_insights !== null 
-                      ? (profile.health_insights as any).timeline || 'No timeline available'
-                      : 'No timeline available'
-                    }
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="font-semibold mb-2">Summary</h4>
-                  <p className="text-muted-foreground">
-                    {typeof profile.health_insights === 'object' && profile.health_insights !== null 
-                      ? (profile.health_insights as any).summary || 'No summary available'
-                      : 'No summary available'
-                    }
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="font-semibold mb-2">Recommendations</h4>
-                  <ul className="space-y-2">
-                    {typeof profile.health_insights === 'object' && profile.health_insights !== null 
-                      && Array.isArray((profile.health_insights as any).recommendations)
-                      ? (profile.health_insights as any).recommendations.map((rec: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <Badge variant="outline" className="mt-0.5">•</Badge>
-                            <span className="text-muted-foreground">{rec}</span>
-                          </li>
-                        ))
-                      : (
-                          <li className="flex items-start gap-2">
-                            <Badge variant="outline" className="mt-0.5">•</Badge>
-                            <span className="text-muted-foreground">No recommendations available</span>
-                          </li>
-                        )
-                    }
-                  </ul>
-                </div>
-              </div>
-            ) : (
+        {profile?.health_insights ? (
+          <HealthInsights insights={profile.health_insights as any} />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Health Insights</CardTitle>
+              <CardDescription>AI-powered analysis of your conversation history</CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="text-center py-8">
                 <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">No health insights yet</h3>
@@ -282,9 +242,9 @@ const Profile = () => {
                   </Button>
                 )}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

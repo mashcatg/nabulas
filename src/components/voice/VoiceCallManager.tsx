@@ -196,14 +196,20 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
 
     // Persist a conversation row with metadata and trigger analysis
     if (user) {
+      // Show saving state
+      setConnecting(true);
+      setConnectingMsg("Saving conversation...");
+      
       const assistantId = (callIdRef as any).assistantId ?? null;
       const { data, error } = await supabase
         .from("conversations")
         .insert({ user_id: user.id, duration, vapi_call_id: callId ?? null, title: "Conversation", assistant_id: assistantId, transcript })
         .select("id")
         .maybeSingle();
+      
       if (error) {
         console.error(error);
+        setConnecting(false);
         toast({ title: "Save failed", description: "Could not save conversation." });
       } else if (data?.id) {
         // Fire-and-forget generate-report
@@ -214,6 +220,8 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {
           console.warn("generate-report invoke failed", e);
         }
+        
+        setConnecting(false);
         navigate(`/chat/${data.id}`);
         toast({ title: "Conversation saved", description: "Analysis will be ready shortly in Chat." });
       }

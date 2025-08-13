@@ -27,6 +27,7 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { useMemo, useState } from "react";
+
 const Chat = () => {
   const navigate = useNavigate();
   const { conversationId } = useParams();
@@ -94,12 +95,12 @@ const Chat = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
           {/* Header skeleton */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <div className="space-y-2">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-8 w-64 sm:w-80" />
+              <Skeleton className="h-4 w-48 sm:w-64" />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Skeleton className="h-10 w-20" />
               <Skeleton className="h-10 w-20" />
               <Skeleton className="h-10 w-32" />
@@ -107,8 +108,8 @@ const Chat = () => {
           </div>
           
           {/* Content skeletons */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
               <CardSkeleton />
               <CardSkeleton />
             </div>
@@ -189,18 +190,27 @@ const Chat = () => {
   const patient = (data.patient_report as any) || {};
 
   return (
-    <main className="py-6 space-y-6">
+    <main className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
       <header className="space-y-1 animate-fade-in">
-        <h1 className="text-3xl font-semibold tracking-tight">{data.title || "Conversation"}</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{data.title || "Conversation"}</h1>
         <p className="text-sm text-muted-foreground">ID: {data.id}</p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <Button variant="secondary" onClick={onShare}>Share</Button>
-          <Button variant="destructive" onClick={onDelete}>Delete</Button>
+        <div className="flex flex-wrap gap-2 mt-4">
+          <Button variant="secondary" size="sm" onClick={onShare}>
+            <Share2 className="h-4 w-4 mr-2" />
+            Share
+          </Button>
+          <Button variant="destructive" size="sm" onClick={onDelete}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
           {(recordingUrl || stereoUrl) && (
             isMobile ? (
               <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>
-                  <Button>Play Recording</Button>
+                  <Button size="sm">
+                    <Play className="h-4 w-4 mr-2" />
+                    Play Recording
+                  </Button>
                 </DrawerTrigger>
                 <DrawerContent>
                   <DrawerHeader>
@@ -213,7 +223,10 @@ const Chat = () => {
             ) : (
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                  <Button>Play Recording</Button>
+                  <Button size="sm">
+                    <Play className="h-4 w-4 mr-2" />
+                    Play Recording
+                  </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -228,8 +241,8 @@ const Chat = () => {
         </div>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-3">
-        <article className="md:col-span-2 space-y-6">
+      <section className="grid gap-6 lg:grid-cols-3">
+        <article className="lg:col-span-2 space-y-6">
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle>Transcript</CardTitle>
@@ -238,25 +251,28 @@ const Chat = () => {
               {vapiLoading ? (
                 <MessageSkeleton count={4} />
               ) : messages.length ? (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-96 overflow-y-auto">
                   {messages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                      <div className={`px-3 py-2 rounded-md text-sm max-w-[80%] ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+                      <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] sm:max-w-[80%] ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
                         <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
-                        <div>{m.message}</div>
+                        <div className="leading-relaxed">{m.message}</div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="prose max-w-none text-sm text-foreground/90">
-                  <p className="text-muted-foreground">Transcript details will appear here. Call ID: {data.vapi_call_id || "—"}</p>
+                <div className="text-center py-8">
+                  <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">Transcript details will appear here</p>
+                  <p className="text-xs text-muted-foreground mt-2">Call ID: {data.vapi_call_id || "—"}</p>
                 </div>
               )}
               {transcriptStr && (
-                <div className="mt-4">
+                <div className="mt-4 pt-4 border-t">
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(transcriptStr);
@@ -279,10 +295,12 @@ const Chat = () => {
             </CardHeader>
             <CardContent>
               {summaryText ? (
-                <p className="text-sm leading-6">{summaryText}</p>
+                <p className="text-sm leading-relaxed">{summaryText}</p>
               ) : (
-                <div className="text-sm text-muted-foreground">
-                  <ShiningText text="HextaAI is thinking..." />
+                <div className="text-center py-6">
+                  <div className="text-sm text-muted-foreground">
+                    <ShiningText text="HextaAI is thinking..." />
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -294,67 +312,82 @@ const Chat = () => {
             <CardHeader>
               <CardTitle>Patient Report</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
+            <CardContent className="space-y-4 text-sm">
               {!summaryText ? (
-                <div className="text-muted-foreground">
-                  <ShiningText text="Generating patient report..." />
+                <div className="text-center py-6">
+                  <div className="text-muted-foreground">
+                    <ShiningText text="Generating patient report..." />
+                  </div>
                 </div>
               ) : (
                 <>
                   <div>
-                    <div className="font-medium">Title</div>
+                    <div className="font-medium mb-1">Title</div>
                     <div className="text-muted-foreground">{patient.title || "—"}</div>
                   </div>
                   <Separator />
                   {Array.isArray(patient.key_points) && patient.key_points.length > 0 && (
-                    <div>
-                      <div className="font-medium">Key Points</div>
-                      <ul className="list-disc pl-5 text-muted-foreground">
-                        {patient.key_points.map((s: string, i: number) => <li key={i}>{s}</li>)}
-                      </ul>
-                    </div>
+                    <>
+                      <div>
+                        <div className="font-medium mb-2">Key Points</div>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {patient.key_points.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                      <Separator />
+                    </>
                   )}
                   <div>
-                    <div className="font-medium">Detected Symptoms</div>
-                    <ul className="list-disc pl-5 text-muted-foreground">
+                    <div className="font-medium mb-2">Detected Symptoms</div>
+                    <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                       {(patient.symptoms || []).map((s: string, i: number) => (
                         <li key={i}>{s}</li>
                       ))}
-                      {!patient.symptoms && <li className="list-none text-muted-foreground">—</li>}
+                      {!patient.symptoms?.length && <li className="list-none">—</li>}
                     </ul>
                   </div>
+                  <Separator />
                   <div>
-                    <div className="font-medium">AI Recommendations</div>
-                    <ul className="list-disc pl-5 text-muted-foreground">
+                    <div className="font-medium mb-2">AI Recommendations</div>
+                    <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                       {(patient.ai_recommendations || []).map((s: string, i: number) => (
                         <li key={i}>{s}</li>
                       ))}
-                      {!patient.ai_recommendations && <li className="list-none text-muted-foreground">—</li>}
+                      {!patient.ai_recommendations?.length && <li className="list-none">—</li>}
                     </ul>
                   </div>
-                  {Array.isArray(patient.risks) && (
-                    <div>
-                      <div className="font-medium">Risks</div>
-                      <ul className="list-disc pl-5 text-muted-foreground">
-                        {patient.risks.map((s: string, i: number) => <li key={i}>{s}</li>)}
-                      </ul>
-                    </div>
+                  {Array.isArray(patient.risks) && patient.risks.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <div className="font-medium mb-2">Risks</div>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {patient.risks.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                    </>
                   )}
-                  {Array.isArray(patient.actions) && (
-                    <div>
-                      <div className="font-medium">Actions</div>
-                      <ul className="list-disc pl-5 text-muted-foreground">
-                        {patient.actions.map((s: string, i: number) => <li key={i}>{s}</li>)}
-                      </ul>
-                    </div>
+                  {Array.isArray(patient.actions) && patient.actions.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <div className="font-medium mb-2">Actions</div>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {patient.actions.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                    </>
                   )}
-                  {Array.isArray(patient.follow_up_questions) && (
-                    <div>
-                      <div className="font-medium">Follow-up Questions</div>
-                      <ul className="list-disc pl-5 text-muted-foreground">
-                        {patient.follow_up_questions.map((s: string, i: number) => <li key={i}>{s}</li>)}
-                      </ul>
-                    </div>
+                  {Array.isArray(patient.follow_up_questions) && patient.follow_up_questions.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <div className="font-medium mb-2">Follow-up Questions</div>
+                        <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                          {patient.follow_up_questions.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                    </>
                   )}
                 </>
               )}
@@ -365,12 +398,29 @@ const Chat = () => {
             <CardHeader>
               <CardTitle>Metadata</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground space-y-2">
-              <div>Status: {vapi.status || "—"}</div>
-              <div>Duration: {data.duration != null ? `${data.duration}s` : (vapi.startedAt && vapi.endedAt ? `${Math.round((new Date(vapi.endedAt).getTime() - new Date(vapi.startedAt).getTime())/1000)}s` : "—")}</div>
-              <div>Assistant ID: {data.assistant_id || vapi.assistantId || "—"}</div>
-              <div>Created: {new Date(data.created_at).toLocaleString()}</div>
-              {vapi.cost && <div>Vapi Cost: ${vapi.cost}</div>}
+            <CardContent className="text-sm space-y-3">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Status:</span>
+                <span>{vapi.status || "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Duration:</span>
+                <span>{data.duration != null ? `${data.duration}s` : (vapi.startedAt && vapi.endedAt ? `${Math.round((new Date(vapi.endedAt).getTime() - new Date(vapi.startedAt).getTime())/1000)}s` : "—")}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Assistant ID:</span>
+                <span className="truncate ml-2">{data.assistant_id || vapi.assistantId || "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Created:</span>
+                <span className="text-right ml-2">{new Date(data.created_at).toLocaleDateString()}</span>
+              </div>
+              {vapi.cost && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Vapi Cost:</span>
+                  <span>${vapi.cost}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </aside>
