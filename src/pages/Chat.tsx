@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { ShiningText } from "@/components/ui/shining-text";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MessageSkeleton, CardSkeleton } from "@/components/ui/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { Share2, Trash2, Play, AlertCircle, MessageCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +28,7 @@ import {
 } from "@/components/ui/drawer";
 import { useMemo, useState } from "react";
 const Chat = () => {
+  const navigate = useNavigate();
   const { conversationId } = useParams();
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -56,92 +59,100 @@ const Chat = () => {
 
   const onShare = async () => {
     if (!conversationId) return;
-    const { error } = await supabase
-      .from("conversations")
-      .update({ is_public: true })
-      .eq("id", conversationId);
-    if (error) {
-      toast.error("Could not share conversation");
-    } else {
-      toast.success("Conversation is now public");
+    try {
+      const { error } = await supabase
+        .from("conversations")
+        .update({ is_public: true })
+        .eq("id", conversationId);
+      if (error) throw error;
+      toast.success("Conversation shared successfully");
       refetch();
+    } catch (error) {
+      console.error("Share error:", error);
+      toast.error("Failed to share conversation");
     }
   };
 
   const onDelete = async () => {
     if (!conversationId) return;
-    const { error } = await supabase
-      .from("conversations")
-      .delete()
-      .eq("id", conversationId);
-    if (error) {
-      toast.error("Could not delete conversation");
-    } else {
-      toast.success("Conversation deleted");
-      // No redirect for now
+    try {
+      const { error } = await supabase
+        .from("conversations")
+        .delete()
+        .eq("id", conversationId);
+      if (error) throw error;
+      toast.success("Conversation deleted successfully");
+      navigate("/profile");
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete conversation");
     }
   };
 
   if (isLoading) {
     return (
-      <main className="py-6 space-y-6">
-        <div className="space-y-2 animate-fade-in">
-          <div className="h-8 w-64 bg-muted rounded animate-pulse" />
-          <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-          <div className="flex gap-2 mt-4">
-            <div className="h-9 w-16 bg-muted rounded animate-pulse" />
-            <div className="h-9 w-16 bg-muted rounded animate-pulse" />
-            <div className="h-9 w-24 bg-muted rounded animate-pulse" />
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </div>
+          
+          {/* Content skeletons */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
+            <div className="space-y-6">
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
           </div>
         </div>
-        <section className="grid gap-6 md:grid-cols-3">
-          <article className="md:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Transcript</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MessageSkeleton count={6} />
-              </CardContent>
-            </Card>
-            <CardSkeleton />
-          </article>
-          <aside className="space-y-6">
-            <CardSkeleton />
-            <CardSkeleton />
-          </aside>
-        </section>
-      </main>
+      </div>
     );
   }
   
   if (error) {
     return (
-      <main className="py-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-destructive mb-2">Error loading conversation</h2>
-              <p className="text-muted-foreground">Please try again later.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
+      <div className="container mx-auto px-4 py-8 text-center">
+        <div className="max-w-md mx-auto">
+          <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Error Loading Conversation</h1>
+          <p className="text-muted-foreground mb-4">
+            There was an error loading this conversation. Please try again.
+          </p>
+          <Button onClick={() => navigate("/profile")} variant="outline">
+            Back to Profile
+          </Button>
+        </div>
+      </div>
     );
   }
   
   if (!data) {
     return (
-      <main className="py-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h2 className="text-lg font-semibold mb-2">Conversation not found</h2>
-              <p className="text-muted-foreground">This conversation may not exist or is not accessible.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
+      <div className="container mx-auto px-4 py-8 text-center">
+        <div className="max-w-md mx-auto">
+          <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Conversation Not Found</h1>
+          <p className="text-muted-foreground mb-4">
+            The conversation you're looking for doesn't exist or you don't have access to it.
+          </p>
+          <Button onClick={() => navigate("/profile")} variant="outline">
+            Back to Profile
+          </Button>
+        </div>
+      </div>
     );
   }
 

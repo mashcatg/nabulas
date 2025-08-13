@@ -1,280 +1,292 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useConversations } from "@/hooks/useConversations";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { AvatarWithFallback } from "@/components/users/AvatarWithFallback";
 import { ProfileSkeleton } from "@/components/ui/skeletons";
-import { ShiningText } from "@/components/ui/shining-text";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Calendar, Clock, Phone, MessageSquare, TrendingUp, Activity } from "lucide-react";
-import { useMemo } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { AvatarWithFallback } from "@/components/users/AvatarWithFallback";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { Clock, MessageCircle, TrendingUp, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const Profile = () => {
   const { user } = useAuth();
-  const { conversations, isLoading } = useConversations();
   const navigate = useNavigate();
+  const { profile, isLoading, totalDuration, totalConversations, averageDuration, weeklyActivity } = useProfile();
+  const { conversations } = useConversations();
+  const [generatingInsights, setGeneratingInsights] = useState(false);
 
-  const stats = useMemo(() => {
-    if (!conversations.length) return null;
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
     
-    const totalCalls = conversations.length;
-    const totalDuration = conversations.reduce((sum, conv) => sum + (conv.duration || 0), 0);
-    const avgDuration = totalDuration / totalCalls;
+    if (hrs > 0) {
+      return `${hrs}h ${remainingMins}m`;
+    }
+    return `${mins}m`;
+  };
+
+  const generateHealthInsights = async () => {
+    if (!user) return;
     
-    // Weekly data for chart
-    const weeklyData = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - i));
-      const dayConversations = conversations.filter(conv => {
-        const convDate = new Date(conv.created_at);
-        return convDate.toDateString() === date.toDateString();
+    setGeneratingInsights(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('health-analysis', {
+        body: { userId: user.id }
       });
       
-      return {
-        day: date.toLocaleDateString('en', { weekday: 'short' }),
-        calls: dayConversations.length,
-        duration: dayConversations.reduce((sum, conv) => sum + (conv.duration || 0), 0),
-      };
-    });
-
-    return {
-      totalCalls,
-      totalDuration: Math.floor(totalDuration / 60), // Convert to minutes
-      avgDuration: Math.floor(avgDuration / 60),
-      thisWeek: conversations.filter(conv => {
-        const convDate = new Date(conv.created_at);
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return convDate >= weekAgo;
-      }).length,
-      weeklyData
-    };
-  }, [conversations]);
+      if (error) throw error;
+      
+      toast.success("Health insights updated successfully!");
+      // Refresh the profile data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error generating health insights:', error);
+      toast.error("Failed to generate health insights. Please try again.");
+    } finally {
+      setGeneratingInsights(false);
+    }
+  };
 
   if (isLoading) {
-    return (
-      <main className="py-8 px-4 md:px-6">
-        <ProfileSkeleton />
-      </main>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!user) {
     return (
-      <main className="py-8 px-4 md:px-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-semibold mb-2">Your Health Dashboard</h1>
-          <p className="text-muted-foreground">Sign in to see your statistics and insights.</p>
-        </div>
-      </main>
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Please sign in to view your profile</h1>
+        <p className="text-muted-foreground">Sign in to access your health dashboard and conversation history.</p>
+      </div>
     );
   }
 
+  const stats = [
+    {
+      title: "Total Conversations",
+      value: totalConversations.toString(),
+      description: "Healthcare consultations",
+      icon: MessageCircle,
+      color: "text-blue-600"
+    },
+    {
+      title: "Total Talk Time",
+      value: formatDuration(totalDuration),
+      description: "Time spent in conversations",
+      icon: Clock,
+      color: "text-green-600"
+    },
+    {
+      title: "Average Session",
+      value: formatDuration(averageDuration),
+      description: "Average conversation length",
+      icon: TrendingUp,
+      color: "text-purple-600"
+    },
+    {
+      title: "This Week",
+      value: weeklyActivity.reduce((sum, day) => sum + day.conversations, 0).toString(),
+      description: "Conversations this week",
+      icon: RefreshCw,
+      color: "text-orange-600"
+    }
+  ];
+
   return (
-    <main className="py-8 px-4 md:px-6 space-y-8 animate-fade-in">
-      {/* Profile Header */}
-      <Card>
-        <CardHeader className="flex flex-row items-center space-y-0 pb-6">
-          <AvatarWithFallback 
-            name={user.user_metadata?.name || user.email || "User"} 
-            src={user.user_metadata?.avatar_url} 
-            className="h-20 w-20"
-          />
-          <div className="ml-6">
-            <h1 className="text-3xl font-bold">
-              {user.user_metadata?.name || "Welcome"}
-            </h1>
-            <p className="text-muted-foreground text-lg">{user.email}</p>
-            <Badge variant="secondary" className="mt-2">
-              <Activity className="mr-1 h-3 w-3" />
-              Healthcare Assistant User
-            </Badge>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="space-y-8">
+        {/* Profile Header */}
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          <div className="flex items-center gap-4">
+            <AvatarWithFallback 
+              src={profile?.avatar_url || ""} 
+              name={profile?.display_name || user.email || "User"} 
+              className="h-16 w-16"
+            />
+            <div>
+              <h1 className="text-3xl font-bold">{profile?.display_name || "Welcome"}</h1>
+              <p className="text-muted-foreground">{user.email}</p>
+              {profile?.bio && (
+                <p className="text-sm text-muted-foreground mt-2">{profile.bio}</p>
+              )}
+            </div>
           </div>
-        </CardHeader>
-      </Card>
+          <div className="ml-auto">
+            <Button 
+              onClick={generateHealthInsights} 
+              disabled={generatingInsights}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${generatingInsights ? 'animate-spin' : ''}`} />
+              {generatingInsights ? 'Analyzing...' : 'Update Health Insights'}
+            </Button>
+          </div>
+        </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Conversations</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalCalls || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              All time sessions
-            </p>
-          </CardContent>
-        </Card>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={index} className="hover:shadow-md transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <Icon className={`h-5 w-5 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground">{stat.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Talk Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalDuration || 0}m</div>
-            <p className="text-xs text-muted-foreground">
-              Minutes of conversation
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Session</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.avgDuration || 0}m</div>
-            <p className="text-xs text-muted-foreground">
-              Per conversation
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.thisWeek || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              New conversations
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts and Recent Activity */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Weekly Activity Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Weekly Activity</CardTitle>
-            <CardDescription>Your conversation pattern over the last 7 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stats?.weeklyData ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stats.weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value, name) => [
-                      name === 'calls' ? `${value} calls` : `${Math.floor(Number(value) / 60)}m`,
-                      name === 'calls' ? 'Conversations' : 'Duration'
-                    ]}
-                  />
-                  <Bar dataKey="calls" fill="hsl(var(--primary))" radius={4} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-200 flex items-center justify-center text-muted-foreground">
-                <ShiningText text="Start your first conversation to see activity data" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Weekly Activity Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Weekly Activity</CardTitle>
+              <CardDescription>Your conversation activity over the past 7 days</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weeklyActivity}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Bar 
+                      dataKey="conversations" 
+                      fill="hsl(var(--primary))" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Recent Conversations */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Conversations</CardTitle>
-            <CardDescription>Your latest healthcare sessions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {conversations.length > 0 ? (
+          {/* Recent Conversations */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Conversations</CardTitle>
+              <CardDescription>Your latest healthcare consultations</CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-3">
-                {conversations.slice(0, 4).map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/chat/${conversation.id}`)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="h-2 w-2 bg-primary rounded-full" />
-                      <div>
-                        <p className="font-medium text-sm">{conversation.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(conversation.created_at), { addSuffix: true })}
+                {conversations.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No conversations yet</h3>
+                    <p className="text-muted-foreground mb-4">Start your first conversation to see it here</p>
+                    <Button onClick={() => navigate("/")} variant="outline">
+                      Start Conversation
+                    </Button>
+                  </div>
+                ) : (
+                  conversations.slice(0, 5).map((conversation) => (
+                    <div 
+                      key={conversation.id}
+                      className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => navigate(`/chat/${conversation.id}`)}
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-medium">{conversation.title}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(conversation.created_at).toLocaleDateString()}
                         </p>
                       </div>
+                      <Badge variant="secondary">View</Badge>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {conversation.duration && (
-                        <Badge variant="outline" className="text-xs">
-                          {Math.floor(conversation.duration / 60)}m
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {conversations.length > 4 && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full mt-4" 
-                    onClick={() => navigate("/")}
-                  >
-                    View All Conversations
-                  </Button>
+                  ))
                 )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Health Insights */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Health Insights</CardTitle>
+            <CardDescription>AI-powered analysis of your conversation history</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {profile?.health_insights ? (
+              <div className="space-y-6">
+                <div>
+                  <h4 className="font-semibold mb-2">Health Timeline</h4>
+                  <p className="text-muted-foreground">
+                    {typeof profile.health_insights === 'object' && profile.health_insights !== null 
+                      ? (profile.health_insights as any).timeline || 'No timeline available'
+                      : 'No timeline available'
+                    }
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-2">Summary</h4>
+                  <p className="text-muted-foreground">
+                    {typeof profile.health_insights === 'object' && profile.health_insights !== null 
+                      ? (profile.health_insights as any).summary || 'No summary available'
+                      : 'No summary available'
+                    }
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-2">Recommendations</h4>
+                  <ul className="space-y-2">
+                    {typeof profile.health_insights === 'object' && profile.health_insights !== null 
+                      && Array.isArray((profile.health_insights as any).recommendations)
+                      ? (profile.health_insights as any).recommendations.map((rec: string, index: number) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-0.5">•</Badge>
+                            <span className="text-muted-foreground">{rec}</span>
+                          </li>
+                        ))
+                      : (
+                          <li className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-0.5">•</Badge>
+                            <span className="text-muted-foreground">No recommendations available</span>
+                          </li>
+                        )
+                    }
+                  </ul>
+                </div>
               </div>
             ) : (
               <div className="text-center py-8">
-                <Phone className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No health insights yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  <ShiningText text="No conversations yet" />
+                  {conversations.length === 0 
+                    ? "Start having conversations to get personalized health insights."
+                    : "Generate AI-powered health insights from your conversation history."
+                  }
                 </p>
-                <Button onClick={() => navigate("/")}>
-                  Start Your First Conversation
-                </Button>
+                {conversations.length > 0 && (
+                  <Button 
+                    onClick={generateHealthInsights} 
+                    disabled={generatingInsights}
+                    className="gap-2"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${generatingInsights ? 'animate-spin' : ''}`} />
+                    {generatingInsights ? 'Analyzing...' : 'Generate Insights'}
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Health Insights */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Health Insights</CardTitle>
-          <CardDescription>Personalized recommendations based on your conversations</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {stats?.totalCalls ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                <h4 className="font-medium text-primary mb-2">Engagement Level</h4>
-                <p className="text-sm text-muted-foreground">
-                  You've had {stats.totalCalls} conversations with an average duration of {stats.avgDuration} minutes. 
-                  Great engagement with healthcare discussions!
-                </p>
-              </div>
-              <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-                <h4 className="font-medium text-accent-foreground mb-2">Weekly Consistency</h4>
-                <p className="text-sm text-muted-foreground">
-                  {stats.thisWeek > 0 
-                    ? `You've been active this week with ${stats.thisWeek} conversations. Keep up the good health habits!`
-                    : "Consider scheduling a health check-in this week to maintain your wellness routine."
-                  }
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <ShiningText text="Start conversations to unlock personalized health insights" />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </main>
+    </div>
   );
 };
 
