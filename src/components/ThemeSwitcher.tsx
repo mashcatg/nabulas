@@ -15,11 +15,11 @@ export function ThemeSwitcher() {
       {options.map((opt) => {
         const Icon = opt.icon;
         return (
-          <Button
-            key={opt.key}
-            variant={theme === opt.key ? "secondary" : "ghost"}
-            size="xs"
-            className={`rounded-full px-[5px] py-[5px] transition-colors ${theme === opt.key ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
+        <Button
+          key={opt.key}
+          variant={theme === opt.key ? "secondary" : "ghost"}
+          size="sm"
+          className={`rounded-full px-[5px] py-[5px] transition-colors ${theme === opt.key ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
             onClick={() => setTheme(opt.key as any)}
             aria-pressed={theme === opt.key}
             aria-label={opt.label}
