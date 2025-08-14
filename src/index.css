@@ -94,6 +94,7 @@ All colors MUST be HSL.
     --chart-5: 249 35% 38%;
     --sidebar: 0 0% 9%;
     --sidebar-foreground: 0 0% 90%;
+    --sidebar-background: 0 0% 15%;
     --sidebar-primary: 247 48% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 251 32% 32%;

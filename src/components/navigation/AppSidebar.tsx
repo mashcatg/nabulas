@@ -25,11 +25,11 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="space-y-1">
-              <NavLink to="/" end className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}`}>
+              <NavLink to="/" end className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted bg-primary/10 text-primary font-medium" : "hover:bg-muted/50"}`}>
                 <Home className="h-4 w-4" />
                 <span>Home</span>
               </NavLink>
-              <NavLink to="/profile" className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted text-primary font-medium" : "hover:bg-muted/50"}`}>
+              <NavLink to="/profile" className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted bg-primary/10 text-primary font-medium" : "hover:bg-muted/50"}`}>
                 <User className="h-4 w-4" />
                 <span>Profile</span>
               </NavLink>
@@ -100,9 +100,10 @@ export function AppSidebar() {
                       <DropdownMenuItem onClick={() => navigate(`/chat/${c.id}`)}>View</DropdownMenuItem>
                       <DropdownMenuItem onClick={async () => {
                         await supabase.from("conversations").update({ is_public: true }).eq("id", c.id);
-                        toast({ title: "Shared", description: "Conversation set to public." });
+                        navigator.clipboard.writeText(`${window.location.origin}/chat/${c.id}`);
+                        toast({ description: "Share Link Copied" });
                       }}>Share</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={async () => {
+                      <DropdownMenuItem className="text-red-600 bg-red-50 hover:bg-red-150" onClick={async () => {
                         await supabase.from("conversations").delete().eq("id", c.id);
                         toast({ title: "Deleted", description: "Conversation removed." });
                       }}>Delete</DropdownMenuItem>

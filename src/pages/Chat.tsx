@@ -6,10 +6,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ShiningText } from "@/components/ui/shining-text";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { MessageSkeleton, CardSkeleton } from "@/components/ui/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Share2, Trash2, Play, AlertCircle, MessageCircle } from "lucide-react";
+import { Share, Trash2, Play, AlertCircle, MessageCircle, Copy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -42,7 +53,7 @@ const Chat = () => {
       if (!conversationId) return null;
       const { data, error } = await supabase
         .from("conversations")
-        .select("id, title, created_at, duration, assistant_id, vapi_call_id, summary, patient_report")
+        .select("id, title, created_at, duration, assistant_id, vapi_call_id, patient_report")
         .eq("id", conversationId)
         .maybeSingle();
       if (error) throw error;
@@ -69,8 +80,9 @@ const Chat = () => {
         .from("conversations")
         .update({ is_public: true })
         .eq("id", conversationId);
+      navigator.clipboard.writeText(`${window.location.origin}/chat/${conversationId}`);
       if (error) throw error;
-      toast.success("Conversation shared successfully");
+      toast.success("Share link copied");
       refetch();
     } catch (error) {
       console.error("Share error:", error);
@@ -96,33 +108,80 @@ const Chat = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="space-y-6">
-          {/* Header skeleton */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-64 sm:w-80" />
-              <Skeleton className="h-4 w-48 sm:w-64" />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-10 w-20" />
-              <Skeleton className="h-10 w-20" />
-              <Skeleton className="h-10 w-32" />
-            </div>
+      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
+        {/* Header skeleton */}
+        <header className="space-y-1 animate-fade-in">
+          <Skeleton className="h-8 w-64 sm:w-80" />
+          <Skeleton className="h-4 w-48 sm:w-64" />
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-32" />
           </div>
+        </header>
           
-          {/* Content skeletons */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <CardSkeleton />
-              <CardSkeleton />
-            </div>
-            <div className="space-y-6">
-              <CardSkeleton />
-              <CardSkeleton />
-            </div>
-          </div>
-        </div>
+        {/* Content skeletons */}
+        <section className="grid gap-6 lg:grid-cols-3">
+          <article className="lg:col-span-2 space-y-6">
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <MessageSkeleton count={4} />
+                <div className="mt-4 pt-4 border-t">
+                  <Skeleton className="h-8 w-36" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <Skeleton className="h-6 w-24" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          </article>
+
+          <aside className="space-y-6">
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+                <Skeleton className="h-px w-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <div className="space-y-1">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-4 w-full" />
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <Skeleton className="h-6 w-24" />
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex justify-between">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </aside>
+        </section>
       </div>
     );
   }
@@ -136,8 +195,8 @@ const Chat = () => {
           <p className="text-muted-foreground mb-4">
             There was an error loading this conversation. Please try again.
           </p>
-          <Button onClick={() => navigate("/profile")} variant="outline">
-            Back to Profile
+          <Button onClick={() => navigate("/")} variant="ghost">
+            Back to Home
           </Button>
         </div>
       </div>
@@ -153,8 +212,8 @@ const Chat = () => {
           <p className="text-muted-foreground mb-4">
             The conversation you're looking for doesn't exist or you don't have access to it.
           </p>
-          <Button onClick={() => navigate("/profile")} variant="outline">
-            Back to Profile
+          <Button onClick={() => navigate("/")} variant="ghost">
+            Back to Home
           </Button>
         </div>
       </div>
@@ -162,7 +221,7 @@ const Chat = () => {
   }
 
   const vapi = vapiDetails || {} as any;
-  const summaryText = vapi.summary || vapi.analysis?.summary || data.summary;
+  const summaryText = vapi.summary || vapi.analysis?.summary;
   const messages: Array<{ role: string; message: string; time?: number }>
     = Array.isArray(vapi.messages) ? vapi.messages : [];
   const transcriptStr: string = vapi.transcript || messages.map(m => `${m.role === 'bot' ? 'AI' : 'User'}: ${m.message}`).join('\n');
@@ -177,12 +236,6 @@ const Chat = () => {
           <audio controls src={recordingUrl} className="w-full" />
         </div>
       )}
-      {stereoUrl && (
-        <div className="space-y-2">
-          <div className="text-sm font-medium">Stereo Recording</div>
-          <audio controls src={stereoUrl} className="w-full" />
-        </div>
-      )}
       {!recordingUrl && !stereoUrl && (
         <div className="text-sm text-muted-foreground">No recording available.</div>
       )}
@@ -193,18 +246,41 @@ const Chat = () => {
 
   return (
     <main className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
-      <header className="space-y-1 animate-fade-in">
+      <header className="space-y-1 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{data.title || "Conversation"}</h1>
+        <div className="flex flex-row justify-start">
         <p className="text-sm text-muted-foreground">ID: {data.id}</p>
+        <Copy className="h-4 w-4 ml-2 cursor-pointer" onClick={() => {
+          navigator.clipboard.writeText(data.id);
+          toast.success("Consultation ID copied");
+        }} />
+        </div></div>
         <div className="flex flex-wrap gap-2 mt-4">
           <Button variant="secondary" size="sm" onClick={onShare}>
-            <Share2 className="h-4 w-4 mr-2" />
+            <Share className="h-4 w-4 mr-2" />
             Share
           </Button>
-          <Button variant="destructive" size="sm" onClick={onDelete}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="default" size="sm" className="text-red-600 bg-red-50 hover:bg-red-200">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete this conversation and its associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           {(recordingUrl || stereoUrl) && (
             isMobile ? (
               <Drawer open={open} onOpenChange={setOpen}>
@@ -246,21 +322,39 @@ const Chat = () => {
       <section className="grid gap-6 lg:grid-cols-3">
         <article className="lg:col-span-2 space-y-6">
           <Card className="animate-fade-in">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Transcript</CardTitle>
+              {transcriptStr && (
+                <div className="">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(transcriptStr);
+                        toast.success("Transcript copied");
+                      } catch {
+                        toast.error("Could not copy transcript");
+                      }
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               {vapiLoading ? (
                 <MessageSkeleton count={4} />
               ) : messages.length ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {messages.map((m, i) => (
-                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                      <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] sm:max-w-[80%] ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
-                        <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
-                        <div className="leading-relaxed">{m.message}</div>
-                      </div>
+                  {messages.filter(m => m.role === 'user' || m.role === 'bot').map((m, i) => (
+                  <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] sm:max-w-[80%] ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+                    <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
+                    <div className="leading-relaxed">{m.message}</div>
                     </div>
+                  </div>
                   ))}
                 </div>
               ) : (
@@ -270,24 +364,7 @@ const Chat = () => {
                   <p className="text-xs text-muted-foreground mt-2">Call ID: {data.vapi_call_id || "—"}</p>
                 </div>
               )}
-              {transcriptStr && (
-                <div className="mt-4 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(transcriptStr);
-                        toast.success("Transcript copied to clipboard");
-                      } catch {
-                        toast.error("Could not copy transcript");
-                      }
-                    }}
-                  >
-                    Copy Full Transcript
-                  </Button>
-                </div>
-              )}
+              
             </CardContent>
           </Card>
 
@@ -301,7 +378,7 @@ const Chat = () => {
               ) : (
                 <div className="text-center py-6">
                   <div className="text-sm text-muted-foreground">
-                    <ShiningText text="HextaAI is thinking..." />
+                    <ShiningText text="Finding Summary..." />
                   </div>
                 </div>
               )}
@@ -407,22 +484,37 @@ const Chat = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Duration:</span>
-                <span>{data.duration != null ? `${data.duration}s` : (vapi.startedAt && vapi.endedAt ? `${Math.round((new Date(vapi.endedAt).getTime() - new Date(vapi.startedAt).getTime())/1000)}s` : "—")}</span>
+                <span>
+                  {(() => {
+                  let seconds = data.duration ?? 
+                    (vapi.startedAt && vapi.endedAt ? 
+                    Math.round((new Date(vapi.endedAt).getTime() - new Date(vapi.startedAt).getTime())/1000) : 
+                    null);
+                  
+                  if (seconds == null) return "—";
+                  
+                  const hours = Math.floor(seconds / 3600);
+                  const minutes = Math.floor((seconds % 3600) / 60);
+                  seconds = seconds % 60;
+                  
+                  const parts = [];
+                  if (hours > 0) parts.push(`${hours}h`);
+                  if (minutes > 0) parts.push(`${minutes}m`);
+                  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+                  
+                  return parts.join(' ');
+                  })()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Assistant ID:</span>
-                <span className="truncate ml-2">{data.assistant_id || vapi.assistantId || "—"}</span>
+                <span className="truncate ml-2">{data.assistant_id || "—"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Created:</span>
                 <span className="text-right ml-2">{new Date(data.created_at).toLocaleDateString()}</span>
               </div>
-              {vapi.cost && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Vapi Cost:</span>
-                  <span>${vapi.cost}</span>
-                </div>
-              )}
+              
             </CardContent>
           </Card>
         </aside>

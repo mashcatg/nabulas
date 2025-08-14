@@ -43,7 +43,7 @@ export function MessageSkeleton({ count = 5 }: { count?: number }) {
     <div className="space-y-4">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
-          <div className={`max-w-[80%] space-y-2 p-3 rounded-lg ${i % 2 === 0 ? 'bg-muted' : 'bg-primary/10'}`}>
+          <div className={`min-w-[200px] max-w-[80%] space-y-2 p-3 rounded-lg ${i % 2 === 0 ? 'bg-muted' : 'bg-primary/10'} animate-pulse`}>
             <Skeleton className="h-3 w-full" />
             <Skeleton className="h-3 w-4/5" />
             {Math.random() > 0.5 && <Skeleton className="h-3 w-3/5" />}
@@ -83,18 +83,84 @@ export function ChartSkeleton({ className }: { className?: string }) {
   );
 }
 
-export function ProfileSkeleton() {
+export function HealthInsightsSkeleton() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <Skeleton className="h-2 w-2 rounded-full mt-2" />
+                <div className="space-y-1 flex-1">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-40" />
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-6 w-24" />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-40" />
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 w-full" />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <Skeleton className="h-2 w-2 rounded-full mt-2" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function ProfileSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        <div className="flex items-center gap-4">
           <Skeleton className="h-16 w-16 rounded-full" />
-          <div className="ml-4 space-y-2">
-            <Skeleton className="h-6 w-32" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-32" />
             <Skeleton className="h-4 w-48" />
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+        <div className="ml-auto">
+          <Skeleton className="h-10 w-40" />
+        </div>
+      </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (

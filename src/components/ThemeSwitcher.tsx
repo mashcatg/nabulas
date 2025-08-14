@@ -17,9 +17,9 @@ export function ThemeSwitcher() {
         return (
           <Button
             key={opt.key}
-            variant={theme === opt.key ? "default" : "ghost"}
+            variant={theme === opt.key ? "secondary" : "ghost"}
             size="xs"
-            className={`rounded-full px-[5px] py-[5px] transition-colors ${theme === opt.key ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}
+            className={`rounded-full px-[5px] py-[5px] transition-colors ${theme === opt.key ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
             onClick={() => setTheme(opt.key as any)}
             aria-pressed={theme === opt.key}
             aria-label={opt.label}
