@@ -24,8 +24,8 @@ export function useProfile() {
     enabled: !!user,
   });
 
-  const { data: conversationStats, isLoading: statsLoading } = useQuery({
-    queryKey: ["conversation-stats", user?.id],
+  const { data: consultationStats, isLoading: statsLoading } = useQuery({
+    queryKey: ["consultation-stats", user?.id],
     queryFn: async () => {
       if (!user) return null;
       
@@ -84,7 +84,7 @@ export function useProfile() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "conversations", filter: `user_id=eq.${user.id}` },
-        () => queryClient.invalidateQueries({ queryKey: ["conversation-stats", user.id] })
+        () => queryClient.invalidateQueries({ queryKey: ["consultation-stats", user.id] })
       )
       .subscribe();
 
@@ -96,11 +96,11 @@ export function useProfile() {
   return { 
     profile, 
     isLoading, 
-    conversationStats, 
+    conversationStats: consultationStats, 
     statsLoading,
-    totalDuration: conversationStats?.totalDuration || 0,
-    totalConversations: conversationStats?.totalConversations || 0,
-    averageDuration: conversationStats?.averageDuration || 0,
-    weeklyActivity: conversationStats?.weeklyActivity || []
+    totalDuration: consultationStats?.totalDuration || 0,
+    totalConversations: consultationStats?.totalConversations || 0,
+    averageDuration: consultationStats?.averageDuration || 0,
+    weeklyActivity: consultationStats?.weeklyActivity || []
   };
 }

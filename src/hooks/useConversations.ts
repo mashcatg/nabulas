@@ -14,6 +14,7 @@ export function useConversations() {
       const { data, error } = await supabase
         .from("conversations")
         .select("id, title, created_at")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;

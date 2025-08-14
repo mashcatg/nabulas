@@ -102,7 +102,7 @@ const Chat = () => {
       refetch();
     } catch (error) {
       console.error("Share error:", error);
-      toast.error("Failed to share conversation");
+      toast.error("Failed to share consultation");
     }
   };
 
@@ -114,17 +114,17 @@ const Chat = () => {
         .delete()
         .eq("id", conversationId);
       if (error) throw error;
-      toast.success("Conversation deleted successfully");
+      toast.success("Consultation deleted successfully");
       navigate("/profile");
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete conversation");
+      toast.error("Failed to delete consultation");
     }
   };
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-[19rem] sm:max-w-[25rem] md:max-w-6xl space-y-6">
+      <div className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6">
         {/* Header skeleton */}
         <header className="space-y-1 animate-fade-in">
           <Skeleton className="h-8 w-64 sm:w-80" />
@@ -207,10 +207,10 @@ const Chat = () => {
       <div className="container mx-auto px-4 py-8 text-center">
         <div className="max-w-md mx-auto">
           <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Error Loading Conversation</h1>
-          <p className="text-muted-foreground mb-4">
-            There was an error loading this conversation. Please try again.
-          </p>
+           <h1 className="text-2xl font-bold mb-2">Error Loading Consultation</h1>
+           <p className="text-muted-foreground mb-4">
+             There was an error loading this consultation. Please try again.
+           </p>
           <Button onClick={() => navigate("/")} variant="ghost">
             Back to Home
           </Button>
@@ -224,10 +224,10 @@ const Chat = () => {
       <div className="container mx-auto px-4 py-8 text-center">
         <div className="max-w-md mx-auto">
           <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Conversation Not Found</h1>
-          <p className="text-muted-foreground mb-4">
-            The conversation you're looking for doesn't exist or you don't have access to it.
-          </p>
+           <h1 className="text-2xl font-bold mb-2">Consultation Not Found</h1>
+           <p className="text-muted-foreground mb-4">
+             The consultation you're looking for doesn't exist or you don't have access to it.
+           </p>
           <Button onClick={() => navigate("/")} variant="ghost">
             Back to Home
           </Button>
@@ -261,10 +261,10 @@ const Chat = () => {
   const patient = (data.patient_report as any) || {};
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
+    <main className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6">
       <header className="space-y-1 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{data.title || "Conversation"}</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{data.title || "Consultation"}</h1>
         <div className="flex flex-row justify-start">
         <p className="text-sm text-muted-foreground">ID: {data.id}</p>
         <Copy className="h-4 w-4 ml-2 cursor-pointer" onClick={() => {
@@ -288,10 +288,10 @@ const Chat = () => {
                 </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete this conversation and its associated data.
-                </AlertDialogDescription>
+                 <AlertDialogTitle>Delete Consultation</AlertDialogTitle>
+                 <AlertDialogDescription>
+                   This action cannot be undone. This will permanently delete this consultation and its associated data.
+                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -311,7 +311,7 @@ const Chat = () => {
                 <DrawerContent>
                   <DrawerHeader>
                     <DrawerTitle>Call Recording</DrawerTitle>
-                    <DrawerDescription>Listen to the audio from this conversation.</DrawerDescription>
+                    <DrawerDescription>Listen to the audio from this consultation.</DrawerDescription>
                   </DrawerHeader>
                   <div className="p-4">{AudioShell}</div>
                 </DrawerContent>
@@ -327,7 +327,7 @@ const Chat = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Call Recording</DialogTitle>
-                    <DialogDescription>Listen to the audio from this conversation.</DialogDescription>
+                    <DialogDescription>Listen to the audio from this consultation.</DialogDescription>
                   </DialogHeader>
                   {AudioShell}
                 </DialogContent>

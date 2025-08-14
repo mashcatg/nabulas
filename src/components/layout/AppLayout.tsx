@@ -17,7 +17,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarInset>
           {/* Top bar */}
           <TopBar />
-          <div className="block md:flex-1 px-2 md:px-8 pt-4 pb-20 animate-fade-in">
+          <div className="block md:flex-1 px-2 md:px-4 pt-4 pb-20 animate-fade-in">
             {children}
           </div>
           <Footer />

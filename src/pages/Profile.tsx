@@ -46,7 +46,7 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-2 md:px-4 py-8 max-w-7xl">
         <ProfileSkeleton />
       </div>
     );
@@ -57,7 +57,7 @@ const Profile = () => {
       <div className="container mx-auto px-4 py-8 text-center">
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold mb-4">Please sign in to view your profile</h1>
-          <p className="text-muted-foreground">Sign in to access your health dashboard and conversation history.</p>
+          <p className="text-muted-foreground">Sign in to access your health dashboard and consultation history.</p>
         </div>
       </div>
     );
@@ -70,7 +70,7 @@ const weeklyActivityCount = Array.isArray(weeklyActivity)
 
 const stats = [
     {
-      title: "Total Conversations",
+      title: "Total Consultations",
       value: totalConversations.toString(),
       description: "Healthcare consultations",
       icon: MessageCircle,
@@ -79,28 +79,28 @@ const stats = [
     {
       title: "Total Talk Time",
       value: formatDuration(totalDuration),
-      description: "Time spent in conversations",
+      description: "Time spent in consultations",
       icon: Clock,
       color: "text-green-600"
     },
     {
       title: "Average Session",
       value: formatDuration(averageDuration),
-      description: "Average conversation length",
+      description: "Average consultation length",
       icon: TrendingUp,
       color: "text-purple-600"
     },
     {
       title: "This Week",
-      value: weeklyActivity.reduce((sum, day) => sum + day.conversations, 0).toString(),
-      description: "Conversations this week",
+      value: (Array.isArray(weeklyActivity) ? weeklyActivity.reduce((sum, day) => sum + (day?.conversations || 0), 0) : 0).toString(),
+      description: "Consultations this week",
       icon: RefreshCw,
       color: "text-orange-600"
     }
   ];
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-[19rem] sm:max-w-[25rem] md:max-w-6xl">
+    <div className="container mx-auto px-2 md:px-4 py-8 max-w-6xl">
       <div className="space-y-6 sm:space-y-8">
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start max-w-full">
@@ -157,7 +157,7 @@ const stats = [
           <Card className="w-full">
             <CardHeader>
               <CardTitle>Weekly Activity</CardTitle>
-              <CardDescription>Your conversation activity over the past 7 days</CardDescription>
+              <CardDescription>Your consultation activity over the past 7 days</CardDescription>
             </CardHeader>
             <CardContent className="w-full overflow-hidden">
               <div className="h-64">
@@ -166,11 +166,12 @@ const stats = [
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                     <XAxis dataKey="day" />
                     <YAxis />
-                    <Bar 
-                      dataKey="conversations" 
-                      fill="hsl(var(--primary))" 
-                      radius={[4, 4, 0, 0]}
-                    />
+                     <Bar 
+                       dataKey="conversations" 
+                       fill="hsl(var(--primary))" 
+                       radius={[4, 4, 0, 0]}
+                       name="Consultations"
+                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -180,7 +181,7 @@ const stats = [
           {/* Recent Conversations */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Conversations</CardTitle>
+              <CardTitle>Recent Consultations</CardTitle>
               <CardDescription>Your latest healthcare consultations</CardDescription>
             </CardHeader>
             <CardContent className="pt-0 pb-4 md:pb-0">
@@ -190,22 +191,22 @@ const stats = [
                     <MessageCircle className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
                     <h3 className="text-base sm:text-lg font-medium mb-2">No consultations yet</h3>
                     <p className="text-sm sm:text-base text-muted-foreground mb-4">Start your first conversation to see it here</p>
-                    <Button onClick={() => navigate("/")} variant="default" className="w-full sm:w-auto">
-                      Start Conversation
-                    </Button>
+                     <Button onClick={() => navigate("/")} variant="default" className="w-full sm:w-auto">
+                       Start Consultation
+                     </Button>
                   </div>
                 ) : (
-                  conversations.slice(0, 3).map((conversation) => (
+                  conversations.slice(0, 3).map((consultation) => (
                     <div 
-                      key={conversation.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-secondary hover:text-primary cursor-pointer hover:bg-accent transition-colors"
-                      onClick={() => navigate(`/chat/${conversation.id}`)}
-                    >
-                      <div className="flex-1 min-w-0 mr-4">
-                        <h4 className="font-medium truncate">{conversation.title}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(conversation.created_at).toLocaleDateString()}
-                        </p>
+                       key={consultation.id}
+                       className="flex items-center justify-between p-3 rounded-lg bg-secondary hover:text-primary cursor-pointer hover:bg-accent transition-colors"
+                       onClick={() => navigate(`/chat/${consultation.id}`)}
+                     >
+                       <div className="flex-1 min-w-0 mr-4">
+                         <h4 className="font-medium truncate">{consultation.title}</h4>
+                         <p className="text-sm text-muted-foreground">
+                           {new Date(consultation.created_at).toLocaleDateString()}
+                         </p>
                       </div>
                       <Badge variant="default" className="flex-shrink-0">View</Badge>
                     </div>
@@ -242,17 +243,17 @@ const stats = [
             <>
               <CardHeader>
                 <CardTitle>Health Insights</CardTitle>
-                <CardDescription>AI-powered analysis of your conversation history</CardDescription>
+                <CardDescription>AI-powered analysis of your consultation history</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
                   <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">No health insights yet</h3>
                   <p className="text-muted-foreground mb-4">
-                    {conversations.length === 0 
-                      ? "Start having conversations to get personalized health insights."
-                      : "Generate AI-powered health insights from your conversation history."
-                    }
+                   {conversations.length === 0 
+                       ? "Start having consultations to get personalized health insights."
+                       : "Generate AI-powered health insights from your consultation history."
+                     }
                   </p>
                   {conversations.length > 0 && (
                     <Button 

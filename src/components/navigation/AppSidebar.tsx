@@ -77,19 +77,19 @@ export function AppSidebar() {
               // }}
               onClick={() => handleNavigation("/")}
             >
-              <PlusCircle /> New Conversation
+              <PlusCircle /> New Consultation
             </Button>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Recent Chats</SidebarGroupLabel>
+          <SidebarGroupLabel>Recent Consultations</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="space-y-1 max-h-[50vh] overflow-y-auto pr-1">
               {!user && (
-                <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
-                  Sign in to view your consultations.
-                </div>
+                  <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
+                   Sign in to view your consultations.
+                 </div>
               )}
               {user && isLoading && (
                 <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
@@ -104,7 +104,7 @@ export function AppSidebar() {
               {conversations.map((c) => (
                 <div key={c.id} className="flex items-center justify-between px-2 py-0 rounded-md hover:bg-accent">
                   <button className="text-left truncate flex-1" onClick={() => handleNavigation(`/chat/${c.id}`)}>
-                    {c.title || `Conversation ${c.id.slice(0, 6)}`}
+                    {c.title || `Consultation ${c.id.slice(0, 6)}`}
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -121,7 +121,7 @@ export function AppSidebar() {
                       }}>Share</DropdownMenuItem>
                       <DropdownMenuItem className="text-red-600 bg-red-50 hover:bg-red-150" onClick={async () => {
                         await supabase.from("conversations").delete().eq("id", c.id);
-                        toast({ title: "Deleted", description: "Conversation removed." });
+                        toast({ title: "Deleted", description: "Consultation removed." });
                       }}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

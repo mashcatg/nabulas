@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function EnhancedProfileSkeleton() {
   return (
-    <div className="container mx-auto px-2 md:px-8 py-6 max-w-6xl space-y-6 animate-fade-up">
+    <div className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6 animate-fade-up">
       {/* Profile header */}
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center animate-fade-up">
         <div className="flex items-center gap-4">

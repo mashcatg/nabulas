@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function EnhancedChatSkeleton() {
   return (
-    <div className="container mx-auto px-2 md:px-8 py-6 max-w-6xl space-y-6 animate-fade-up">
+    <div className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6 animate-fade-up">
       {/* Header section with title and actions */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between animate-fade-up">
         <div className="space-y-2 flex-1">
