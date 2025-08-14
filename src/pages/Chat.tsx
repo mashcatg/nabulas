@@ -187,23 +187,23 @@ const Chat = () => {
   const patient = (data.patient_report as any) || {};
 
   return (
-    <main className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6 animate-fade-in">
-      <header className="space-y-1 animate-fade-in flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+    <main className="container mx-auto px-2 sm:px-3 md:px-4 py-4 sm:py-6 max-w-5xl space-y-4 sm:space-y-6 animate-fade-in">
+      <header className="space-y-1 animate-fade-in flex flex-col gap-3 sm:gap-4">
         <div className="min-w-0 flex-1 break-words">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight break-words">{data.title || "Consultation"}</h1>
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight break-words">{data.title || "Consultation"}</h1>
           <div className="flex flex-row items-center justify-start gap-2 mt-1">
-            <p className="text-sm text-muted-foreground truncate">ID: {data.id}</p>
-            <Copy className="h-4 w-4 cursor-pointer flex-shrink-0" onClick={() => {
+            <p className="text-xs sm:text-sm text-muted-foreground break-all">ID: {data.id}</p>
+            <Copy className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer flex-shrink-0" onClick={() => {
               navigator.clipboard.writeText(data.id);
               toast.success("Consultation ID copied");
             }} />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 flex-shrink-0">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {data.isOwner && (
             <>
-              <Button variant="secondary" size="sm" onClick={onShare}>
-                <Share className="h-4 w-4 mr-2" />
+              <Button variant="secondary" size="sm" onClick={onShare} className="flex-1 sm:flex-none">
+                <Share className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                 Share
               </Button>
               {isMobile ? (
@@ -289,14 +289,14 @@ const Chat = () => {
         </div>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-3 w-full max-w-full overflow-x-hidden">
-        <article className="lg:col-span-2 space-y-6 w-full max-w-full overflow-x-hidden">
+      <section className="grid gap-4 sm:gap-6 lg:grid-cols-3 w-full max-w-full overflow-x-hidden">
+        <article className="lg:col-span-2 space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
           <Card className="animate-fade-in w-full max-w-full overflow-x-hidden">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Transcript</CardTitle>
+            <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <CardTitle className="text-base sm:text-lg">Transcript</CardTitle>
               {transcriptStr && (
                 <div className="">
-                  <Button
+                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={async () => {
@@ -307,20 +307,21 @@ const Chat = () => {
                         toast.error("Could not copy transcript");
                       }
                     }}
+                    className="w-full sm:w-auto"
                   >
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               )}
             </CardHeader>
-            <CardContent className="w-full max-w-full overflow-x-hidden">
+            <CardContent className="w-full max-w-full overflow-x-hidden px-3 sm:px-6">
               {vapiLoading ? (
                 <MessageSkeleton count={4} />
               ) : messages.length ? (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
+                <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
                   {messages.filter(m => m.role === 'user' || m.role === 'bot').map((m, i) => (
                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in w-full`}>
-                     <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] break-words overflow-hidden ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+                     <div className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm max-w-[85%] break-words overflow-hidden ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
                        <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
                        <div className="leading-relaxed break-words overflow-wrap-anywhere">{m.message}</div>
                      </div>
@@ -340,14 +341,14 @@ const Chat = () => {
 
           <Card className="animate-fade-in">
             <CardHeader>
-              <CardTitle>AI Summary</CardTitle>
+              <CardTitle className="text-base sm:text-lg">AI Summary</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-3 sm:px-6">
               {summaryText ? (
-                <p className="text-sm leading-relaxed">{summaryText}</p>
+                <p className="text-xs sm:text-sm leading-relaxed break-words">{summaryText}</p>
               ) : (
-                <div className="text-center py-6">
-                  <div className="text-sm text-muted-foreground">
+                <div className="text-center py-4 sm:py-6">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     <ShiningText text="Generating Summary..." />
                   </div>
                 </div>
@@ -356,12 +357,12 @@ const Chat = () => {
           </Card>
         </article>
 
-        <aside className="space-y-6 w-full max-w-full overflow-x-hidden">
+        <aside className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
           <Card className="animate-fade-in">
             <CardHeader>
-              <CardTitle>Patient Report</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Patient Report</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+            <CardContent className="space-y-3 sm:space-y-4 text-xs sm:text-sm px-3 sm:px-6">
               {!summaryText ? (
                 <div className="text-center py-6">
                   <div className="text-muted-foreground">

@@ -12,14 +12,22 @@ export function useProfile() {
     queryFn: async () => {
       if (!user) return null;
       
-      const { data, error } = await supabase
+      // Get profile data from profiles table
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
       
-      if (error) throw error;
-      return data;
+      if (profileError) throw profileError;
+      
+      // Combine with user auth data for complete profile
+      return {
+        ...profileData,
+        email: user.email,
+        display_name: profileData?.display_name || user.user_metadata?.display_name || user.email?.split('@')[0],
+        avatar_url: profileData?.avatar_url || user.user_metadata?.avatar_url
+      };
     },
     enabled: !!user,
   });

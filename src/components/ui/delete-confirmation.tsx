@@ -42,8 +42,8 @@ export function DeleteConfirmation({ onConfirm, isMenuItem }: DeleteConfirmation
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-secondary">Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogCancel className="bg-secondary text-secondary-foreground hover:bg-secondary/80">Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} className="bg-red-600 text-white hover:bg-red-700">
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -57,7 +57,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <Button
               variant="pill"
-              className="w-full justify-start"
+              className="w-full justify-start bg-accent text-accent-foreground hover:bg-accent/80"
               onClick={() => handleNavigation("/")}
             >
               <PlusCircle className="mr-2 h-4 w-4" />

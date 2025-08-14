@@ -14,10 +14,15 @@ export function Footer() {
             </p>
           </div>
           
-          {/* Quick links */}
+          {/* Navigation */}
           <div>
-            <h4 className="font-medium mb-4">Legal</h4>
+            <h4 className="font-medium mb-4">Navigation</h4>
             <ul className="space-y-2 text-sm">
+              <li>
+                <a href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
+                  About
+                </a>
+              </li>
               <li>
                 <a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
                   Privacy Policy

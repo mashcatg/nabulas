@@ -217,28 +217,10 @@ const stats = [
           </Card>
         </div>
 
-        {/* Health Insights */}
+          {/* Health Insights */}
         <Card>
           {profile?.health_insights ? (
-            <HealthInsights 
-              insights={(() => {
-                try {
-                  // Handle string format
-                  if (typeof profile.health_insights === 'string') {
-                    return JSON.parse(profile.health_insights);
-                  }
-                  // Handle object format
-                  return profile.health_insights;
-                } catch (error) {
-                  console.error('Failed to parse health insights:', error);
-                  return {
-                    timeline: "Error displaying health insights",
-                    summary: "There was an error displaying your health insights. Please try regenerating them.",
-                    recommendations: ["Regenerate health insights"]
-                  };
-                }
-              })()}
-            />
+            <HealthInsights insights={profile.health_insights} />
           ) : (
             <>
               <CardHeader>
