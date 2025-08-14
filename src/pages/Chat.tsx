@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ShiningText } from "@/components/ui/shining-text";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { EnhancedChatSkeleton } from "@/components/ui/enhanced-chat-skeleton";
+import { MobileChatSkeleton } from "@/components/ui/mobile-chat-skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   AlertDialog,
@@ -123,83 +125,7 @@ const Chat = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6">
-        {/* Header skeleton */}
-        <header className="space-y-1 animate-fade-in">
-          <Skeleton className="h-8 w-64 sm:w-80" />
-          <Skeleton className="h-4 w-48 sm:w-64" />
-          <div className="flex flex-wrap gap-2 mt-4">
-            <Skeleton className="h-9 w-24" />
-            <Skeleton className="h-9 w-24" />
-            <Skeleton className="h-9 w-32" />
-          </div>
-        </header>
-          
-        {/* Content skeletons */}
-        <section className="grid gap-6 lg:grid-cols-3">
-          <article className="lg:col-span-2 space-y-6">
-            <Card className="animate-fade-in">
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <MessageSkeleton count={4} />
-                <div className="mt-4 pt-4 border-t">
-                  <Skeleton className="h-8 w-36" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="animate-fade-in">
-              <CardHeader>
-                <Skeleton className="h-6 w-24" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          </article>
-
-          <aside className="space-y-6">
-            <Card className="animate-fade-in">
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-                <Skeleton className="h-px w-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <div className="space-y-1">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <Skeleton key={i} className="h-4 w-full" />
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="animate-fade-in">
-              <CardHeader>
-                <Skeleton className="h-6 w-24" />
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </aside>
-        </section>
-      </div>
-    );
+    return isMobile ? <MobileChatSkeleton /> : <EnhancedChatSkeleton />;
   }
   
   if (error) {
@@ -295,10 +221,10 @@ const Chat = () => {
                         This action cannot be undone. This will permanently delete this consultation and its associated data.
                       </DrawerDescription>
                     </DrawerHeader>
-                    <div className="p-4 flex gap-2">
-                      <Button variant="outline" className="flex-1" onClick={() => {}}>Cancel</Button>
-                      <Button variant="destructive" className="flex-1" onClick={onDelete}>Delete</Button>
-                    </div>
+                     <div className="p-4 flex gap-2">
+                       <Button variant="outline" className="flex-1 bg-secondary" onClick={() => {}}>Cancel</Button>
+                       <Button variant="destructive" className="flex-1" onClick={onDelete}>Delete</Button>
+                     </div>
                   </DrawerContent>
                 </Drawer>
               ) : (
@@ -363,9 +289,9 @@ const Chat = () => {
         </div>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-3 min-w-0 w-full overflow-hidden">
-        <article className="lg:col-span-2 space-y-6 min-w-0 overflow-hidden">
-          <Card className="animate-fade-in overflow-hidden">
+      <section className="grid gap-6 lg:grid-cols-3 w-full max-w-full overflow-x-hidden">
+        <article className="lg:col-span-2 space-y-6 w-full max-w-full overflow-x-hidden">
+          <Card className="animate-fade-in w-full max-w-full overflow-x-hidden">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Transcript</CardTitle>
               {transcriptStr && (
@@ -387,7 +313,7 @@ const Chat = () => {
                 </div>
               )}
             </CardHeader>
-            <CardContent className="overflow-hidden">
+            <CardContent className="w-full max-w-full overflow-x-hidden">
               {vapiLoading ? (
                 <MessageSkeleton count={4} />
               ) : messages.length ? (
@@ -430,7 +356,7 @@ const Chat = () => {
           </Card>
         </article>
 
-        <aside className="space-y-6 min-w-0 overflow-hidden">
+        <aside className="space-y-6 w-full max-w-full overflow-x-hidden">
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle>Patient Report</CardTitle>
