@@ -27,7 +27,14 @@ export function AppSidebar() {
     <>
       <SidebarHeader>
         <div className="flex items-center justify-between px-2 py-1.5">
-          <div className="font-semibold tracking-tight">Nabulas</div>
+          {/* <div className="font-semibold tracking-tight">Nabulas</div> */}
+         <img
+            src="/nabius.png"
+            alt="Nabulas"
+            className="h-8 cursor-pointer hover:opacity-80 transition-opacity dark:invert dark:brightness-0 dark:brightness-400"
+            onClick={() => navigate("/")}
+          />
+
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -92,7 +99,7 @@ export function AppSidebar() {
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-md">
+                      <Button variant="ghost" size="icon" className="ml-2 rounded-md">
                         <MoreHorizontal />
                       </Button>
                     </DropdownMenuTrigger>
