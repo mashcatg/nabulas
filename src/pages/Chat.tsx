@@ -261,18 +261,19 @@ const Chat = () => {
   const patient = (data.patient_report as any) || {};
 
   return (
-    <main className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6">
-      <header className="space-y-1 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">{data.title || "Consultation"}</h1>
-        <div className="flex flex-row justify-start">
-        <p className="text-sm text-muted-foreground">ID: {data.id}</p>
-        <Copy className="h-4 w-4 ml-2 cursor-pointer" onClick={() => {
-          navigator.clipboard.writeText(data.id);
-          toast.success("Consultation ID copied");
-        }} />
-        </div></div>
-        <div className="flex flex-wrap gap-2 mt-4">
+    <main className="container mx-auto px-3 md:px-4 py-6 max-w-6xl space-y-6 overflow-hidden">
+      <header className="space-y-1 animate-fade-in flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight break-words">{data.title || "Consultation"}</h1>
+          <div className="flex flex-row items-center justify-start gap-2 mt-1">
+            <p className="text-sm text-muted-foreground truncate">ID: {data.id}</p>
+            <Copy className="h-4 w-4 cursor-pointer flex-shrink-0" onClick={() => {
+              navigator.clipboard.writeText(data.id);
+              toast.success("Consultation ID copied");
+            }} />
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:gap-2">
           {data.isOwner && (
             <>
               <Button variant="secondary" size="sm" onClick={onShare}>
@@ -299,6 +300,8 @@ const Chat = () => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </>
+          )}
           {(recordingUrl || stereoUrl) && (
             isMobile ? (
               <Drawer open={open} onOpenChange={setOpen}>
@@ -334,13 +337,48 @@ const Chat = () => {
               </Dialog>
             )
           )}
-            </>
-          )}
           {!data.isOwner && (
-            <Button variant="secondary" size="sm" disabled>
-              <Share className="h-4 w-4 mr-2" />
-              Share
-            </Button>
+            <>
+              {(recordingUrl || stereoUrl) && (
+                isMobile ? (
+                  <Drawer open={open} onOpenChange={setOpen}>
+                    <DrawerTrigger asChild>
+                      <Button size="sm">
+                        <Play className="h-4 w-4 mr-2" />
+                        Play Recording
+                      </Button>
+                    </DrawerTrigger>
+                    <DrawerContent>
+                      <DrawerHeader>
+                        <DrawerTitle>Call Recording</DrawerTitle>
+                        <DrawerDescription>Listen to the audio from this consultation.</DrawerDescription>
+                      </DrawerHeader>
+                      <div className="p-4">{AudioShell}</div>
+                    </DrawerContent>
+                  </Drawer>
+                ) : (
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Play className="h-4 w-4 mr-2" />
+                        Play Recording
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Call Recording</DialogTitle>
+                        <DialogDescription>Listen to the audio from this consultation.</DialogDescription>
+                      </DialogHeader>
+                      {AudioShell}
+                    </DialogContent>
+                  </Dialog>
+                )
+              )}
+              <Button variant="secondary" size="sm" disabled>
+                <Share className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            </>
           )}
         </div>
       </header>
@@ -376,9 +414,9 @@ const Chat = () => {
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {messages.filter(m => m.role === 'user' || m.role === 'bot').map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] sm:max-w-[80%] ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
-                    <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
-                    <div className="leading-relaxed">{m.message}</div>
+                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[90%] break-words ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+                      <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
+                      <div className="leading-relaxed break-words">{m.message}</div>
                     </div>
                   </div>
                   ))}
@@ -534,7 +572,7 @@ const Chat = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Assistant ID:</span>
-                <span className="truncate ml-2">{data.assistant_id || "—"}</span>
+                <span className="truncate ml-2 min-w-0">{data.assistant_id || "—"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Created:</span>

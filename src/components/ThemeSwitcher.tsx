@@ -11,7 +11,7 @@ export function ThemeSwitcher() {
   ];
 
   return (
-    <div className="inline-flex items-center rounded-full border p-[3px]">
+    <div className="inline-flex items-center rounded-full border p-[2px] h-8">
       {options.map((opt) => {
         const Icon = opt.icon;
         return (
@@ -19,12 +19,12 @@ export function ThemeSwitcher() {
           key={opt.key}
           variant={theme === opt.key ? "secondary" : "ghost"}
           size="sm"
-          className={`rounded-full px-[5px] py-[5px] transition-colors ${theme === opt.key ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
+          className={`rounded-full px-[3px] py-[3px] h-6 w-6 transition-colors ${theme === opt.key ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
             onClick={() => setTheme(opt.key as any)}
             aria-pressed={theme === opt.key}
             aria-label={opt.label}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-3 w-3" />
           </Button>
         );
       })}
