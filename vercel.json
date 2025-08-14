@@ -1,5 +1,5 @@
-import { BrowserRouter } from "react-router-dom";
-
-<BrowserRouter>
-  <App />
-</BrowserRouter>
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
