@@ -11,6 +11,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthGate } from "@/components/AuthGate";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import { VoiceProvider } from "@/components/voice/VoiceCallManager";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App: React.FC = () => {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/chat/:conversationId" element={<Chat />} />
                     <Route path="/chat/new" element={<Navigate to="/" replace />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

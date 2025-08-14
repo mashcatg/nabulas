@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 
 import { TopBar } from "./TopBar";
 import { AppSidebar } from "../navigation/AppSidebar";
+import { Footer } from "./Footer";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   
@@ -19,6 +20,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <div className="block md:flex-1 px-2 md:px-8 pt-4 pb-20 animate-fade-in">
             {children}
           </div>
+          <Footer />
         </SidebarInset>
       </div>
     </SidebarProvider>
