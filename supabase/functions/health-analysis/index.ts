@@ -88,7 +88,24 @@ Please provide a structured analysis with:
 Format your response as JSON with keys: timeline, summary, recommendations (array of strings).
 Be professional, empathetic, and focus on actionable insights while noting this is for informational purposes only.`;
 
-    const deepseekResponse = await fetch('https://api.deepseek.com/chat/completions', {
+    // Validate conversation data
+    const validConversations = conversationData.filter(conv => 
+      conv.summary || conv.patientReport
+    );
+
+    if (validConversations.length === 0) {
+      return new Response(JSON.stringify({ 
+        insights: {
+          timeline: "No valid conversation data available for analysis.",
+          summary: "Your conversations need summaries or patient reports for meaningful analysis.",
+          recommendations: ["Complete your consultations to generate insights"]
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const deepseekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${deepseekApiKey}`,
@@ -106,8 +123,16 @@ Be professional, empathetic, and focus on actionable insights while noting this 
     });
 
     if (!deepseekResponse.ok) {
-      console.error('DeepSeek API error:', await deepseekResponse.text());
-      return new Response(JSON.stringify({ error: 'AI analysis failed' }), {
+      const errorText = await deepseekResponse.text();
+      console.error('DeepSeek API error:', {
+        status: deepseekResponse.status,
+        statusText: deepseekResponse.statusText,
+        error: errorText,
+      });
+      return new Response(JSON.stringify({ 
+        error: 'AI analysis failed',
+        details: `HTTP ${deepseekResponse.status}: ${deepseekResponse.statusText}` 
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

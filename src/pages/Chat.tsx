@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";  
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ShiningText } from "@/components/ui/shining-text";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ import {
 import { useMemo, useState } from "react";
 
 const Chat = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { conversationId } = useParams();
   
@@ -53,11 +55,25 @@ const Chat = () => {
       if (!conversationId) return null;
       const { data, error } = await supabase
         .from("conversations")
-        .select("id, title, created_at, duration, assistant_id, vapi_call_id, patient_report")
+        .select("id, title, created_at, duration, assistant_id, vapi_call_id, patient_report, user_id, is_public")
         .eq("id", conversationId)
         .maybeSingle();
+      
       if (error) throw error;
-      return data;
+      if (!data) return null;
+      
+      // Allow access if either:
+      // 1. The conversation is public
+      // 2. The user owns the conversation
+      const hasAccess = data.is_public || (user && data.user_id === user.id);
+      if (!hasAccess) {
+        throw new Error("Access denied");
+      }
+      
+      return {
+        ...data,
+        isOwner: user && data.user_id === user.id
+      };
     },
   });
 
@@ -108,7 +124,7 @@ const Chat = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
+      <div className="container mx-auto px-4 py-6 max-w-[19rem] sm:max-w-[25rem] md:max-w-6xl space-y-6">
         {/* Header skeleton */}
         <header className="space-y-1 animate-fade-in">
           <Skeleton className="h-8 w-64 sm:w-80" />
@@ -257,17 +273,19 @@ const Chat = () => {
         }} />
         </div></div>
         <div className="flex flex-wrap gap-2 mt-4">
-          <Button variant="secondary" size="sm" onClick={onShare}>
-            <Share className="h-4 w-4 mr-2" />
-            Share
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="default" size="sm" className="text-red-600 bg-red-50 hover:bg-red-200">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+          {data.isOwner && (
+            <>
+              <Button variant="secondary" size="sm" onClick={onShare}>
+                <Share className="h-4 w-4 mr-2" />
+                Share
               </Button>
-            </AlertDialogTrigger>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default" size="sm" className="text-red-600 bg-red-50 hover:bg-red-200">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
@@ -315,6 +333,14 @@ const Chat = () => {
                 </DialogContent>
               </Dialog>
             )
+          )}
+            </>
+          )}
+          {!data.isOwner && (
+            <Button variant="secondary" size="sm" disabled>
+              <Share className="h-4 w-4 mr-2" />
+              Share
+            </Button>
           )}
         </div>
       </header>
@@ -378,7 +404,7 @@ const Chat = () => {
               ) : (
                 <div className="text-center py-6">
                   <div className="text-sm text-muted-foreground">
-                    <ShiningText text="Finding Summary..." />
+                    <ShiningText text="Generating Summary..." />
                   </div>
                 </div>
               )}

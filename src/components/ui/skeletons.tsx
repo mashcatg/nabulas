@@ -148,7 +148,7 @@ export function HealthInsightsSkeleton() {
 
 export function ProfileSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
+    <div>
       <div className="flex flex-col md:flex-row gap-6 items-start">
         <div className="flex items-center gap-4">
           <Skeleton className="h-16 w-16 rounded-full" />

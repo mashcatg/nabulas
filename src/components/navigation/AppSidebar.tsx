@@ -1,9 +1,9 @@
-import { SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader } from "@/components/ui/sidebar";
+import { SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MoreHorizontal, Home, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useConversations } from "@/hooks/useConversations";
@@ -11,7 +11,17 @@ import { useConversations } from "@/hooks/useConversations";
 export function AppSidebar() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { conversations, isLoading } = useConversations();
+  const { setOpenMobile, isMobile } = useSidebar();
+  
+  // Close sidebar on navigation in mobile
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <>
@@ -25,14 +35,20 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="space-y-1">
-              <NavLink to="/" end className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted bg-primary/10 text-primary font-medium" : "hover:bg-muted/50"}`}>
+              <button
+                onClick={() => handleNavigation("/")}
+                className={`flex items-center gap-2 px-2 py-2 rounded-md w-full ${location.pathname === "/" ? "bg-muted bg-primary/10 text-primary font-medium" : "hover:bg-muted/50"}`}
+              >
                 <Home className="h-4 w-4" />
                 <span>Home</span>
-              </NavLink>
-              <NavLink to="/profile" className={({ isActive }) => `flex items-center gap-2 px-2 py-2 rounded-md ${isActive ? "bg-muted bg-primary/10 text-primary font-medium" : "hover:bg-muted/50"}`}>
+              </button>
+              <button
+                onClick={() => handleNavigation("/profile")}
+                className={`flex items-center gap-2 px-2 py-2 rounded-md w-full ${location.pathname === "/profile" ? "bg-muted bg-primary/10 text-primary font-medium" : "hover:bg-muted/50"}`}
+              >
                 <User className="h-4 w-4" />
                 <span>Profile</span>
-              </NavLink>
+              </button>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -59,7 +75,7 @@ export function AppSidebar() {
               //   }
               //   navigate(`/chat/${data.id}`);
               // }}
-              onClick={() => navigate("/")}
+              onClick={() => handleNavigation("/")}
             >
               <PlusCircle /> New Conversation
             </Button>
@@ -72,22 +88,22 @@ export function AppSidebar() {
             <div className="space-y-1 max-h-[50vh] overflow-y-auto pr-1">
               {!user && (
                 <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
-                  Sign in to view your conversations.
+                  Sign in to view your consultations.
                 </div>
               )}
               {user && isLoading && (
                 <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
-                  Loading conversations...
+                  Loading consultations...
                 </div>
               )}
               {user && !isLoading && conversations.length === 0 && (
                 <div className="text-sm text-muted-foreground px-2 py-3 rounded-md border border-dashed">
-                  No conversations yet.
+                  No consultations yet.
                 </div>
               )}
               {conversations.map((c) => (
                 <div key={c.id} className="flex items-center justify-between px-2 py-0 rounded-md hover:bg-accent">
-                  <button className="text-left truncate flex-1" onClick={() => navigate(`/chat/${c.id}`)}>
+                  <button className="text-left truncate flex-1" onClick={() => handleNavigation(`/chat/${c.id}`)}>
                     {c.title || `Conversation ${c.id.slice(0, 6)}`}
                   </button>
                   <DropdownMenu>

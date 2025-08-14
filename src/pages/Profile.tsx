@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useHealthInsights } from "@/hooks/useHealthInsights";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -32,23 +33,12 @@ const Profile = () => {
     return `${mins}m`;
   };
 
+  const { generateInsights } = useHealthInsights();
+  
   const generateHealthInsights = async () => {
-    if (!user) return;
-    
     setGeneratingInsights(true);
     try {
-      const { data, error } = await supabase.functions.invoke('health-analysis', {
-        body: { userId: user.id }
-      });
-      
-      if (error) throw error;
-      
-      toast.success("Health insights updated successfully!");
-      // Refresh the profile data
-      window.location.reload();
-    } catch (error) {
-      console.error('Error generating health insights:', error);
-      toast.error("Failed to generate health insights. Please try again.");
+      await generateInsights();
     } finally {
       setGeneratingInsights(false);
     }
@@ -110,18 +100,18 @@ const stats = [
   ];
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-[19rem] sm:max-w-[25rem] md:max-w-6xl">
       <div className="space-y-6 sm:space-y-8">
         {/* Profile Header */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start max-w-full">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-grow min-w-0">
             <AvatarWithFallback 
-              src={user?.avatar_url || ""} 
-              name={user?.display_name || user.email || "User"} 
+              src={profile?.avatar_url || ""} 
+              name={profile?.display_name || user.email || "User"} 
               className="h-16 w-16 sm:h-20 sm:w-20"
             />
             <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-bold">{user?.display_name || "Welcome"}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{profile?.display_name || "Welcome"}</h1>
               <p className="text-sm sm:text-base text-muted-foreground">{user.email}</p>
               {profile?.bio && (
                 <p className="text-sm text-muted-foreground mt-2">{profile.bio}</p>
@@ -141,13 +131,13 @@ const stats = [
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card key={index} className="hover:shadow-md transition-shadow">
+              <Card key={index} className="hover:shadow-md transition-shadow overflow-hidden">
                 <CardHeader className="flex flex-row items-start space-y-0 pb-6">
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-4 w-full">
                     <div className={`p-2 rounded-lg bg-accent flex-shrink-0`}>
                       <Icon className={`h-5 w-5 text-primary`} />
                     </div>
@@ -162,14 +152,14 @@ const stats = [
           })}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 w-full">
           {/* Weekly Activity Chart */}
-          <Card>
+          <Card className="w-full">
             <CardHeader>
               <CardTitle>Weekly Activity</CardTitle>
               <CardDescription>Your conversation activity over the past 7 days</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="w-full overflow-hidden">
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={weeklyActivity}>
@@ -193,7 +183,7 @@ const stats = [
               <CardTitle>Recent Conversations</CardTitle>
               <CardDescription>Your latest healthcare consultations</CardDescription>
             </CardHeader>
-            <CardContent className="pt-0 pb-0">
+            <CardContent className="pt-0 pb-4 md:pb-0">
               <div className="space-y-3">
                 {conversations.length === 0 ? (
                   <div className="text-center py-6 sm:py-8">
@@ -232,28 +222,19 @@ const stats = [
             <HealthInsights 
               insights={(() => {
                 try {
+                  // Handle string format
                   if (typeof profile.health_insights === 'string') {
-                    const parsed = JSON.parse(profile.health_insights);
-                    // The timeline is stored as a JSON string within the object
-                    if (parsed.timeline && typeof parsed.timeline === 'string') {
-                      try {
-                        // Parse the nested timeline JSON string
-                        const timelineData = JSON.parse(parsed.timeline);
-                        // Return the combined data
-                        return {
-                          ...timelineData,
-                          summary: timelineData.summary,
-                          recommendations: timelineData.recommendations || parsed.recommendations
-                        };
-                      } catch {
-                        return parsed;
-                      }
-                    }
-                    return parsed;
+                    return JSON.parse(profile.health_insights);
                   }
+                  // Handle object format
                   return profile.health_insights;
-                } catch {
-                  return null;
+                } catch (error) {
+                  console.error('Failed to parse health insights:', error);
+                  return {
+                    timeline: "Error displaying health insights",
+                    summary: "There was an error displaying your health insights. Please try regenerating them.",
+                    recommendations: ["Regenerate health insights"]
+                  };
                 }
               })()}
             />
