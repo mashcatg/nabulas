@@ -8,6 +8,7 @@ const Index = () => {
   const lastLine = transcript.length ? transcript[transcript.length - 1].text : "";
 
   return (
+    
     <main className="relative flex flex-col items-center justify-center text-center py-12 px-4 animate-fade-in">
       <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-3 animate-fade-in">
   Nabulas{" "}

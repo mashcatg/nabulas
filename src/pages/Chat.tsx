@@ -223,7 +223,7 @@ const Chat = () => {
                     </DrawerHeader>
                      <div className="p-4 flex gap-2">
                        <Button variant="outline" className="flex-1 bg-secondary" onClick={() => {}}>Cancel</Button>
-                       <Button variant="destructive" className="flex-1" onClick={onDelete}>Delete</Button>
+                       <Button variant="default" className="flex-1 bg-red-600 text-white hover:bg-red-400" onClick={onDelete}>Delete</Button>
                      </div>
                   </DrawerContent>
                 </Drawer>
@@ -244,7 +244,7 @@ const Chat = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+                      <AlertDialogAction className=" bg-red-600 text-white hover:bg-red-400" onClick={onDelete}>Delete</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
