@@ -120,8 +120,10 @@ export function AppSidebar() {
                         toast({ description: "Share Link Copied" });
                       }}>Share</DropdownMenuItem>
                       <DropdownMenuItem className="text-red-600 bg-red-50 hover:bg-red-150" onClick={async () => {
-                        await supabase.from("conversations").delete().eq("id", c.id);
-                        toast({ title: "Deleted", description: "Consultation removed." });
+                        if (confirm("Are you sure you want to delete this consultation? This action cannot be undone.")) {
+                          await supabase.from("conversations").delete().eq("id", c.id);
+                          toast({ title: "Deleted", description: "Consultation removed." });
+                        }
                       }}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

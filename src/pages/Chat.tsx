@@ -261,9 +261,9 @@ const Chat = () => {
   const patient = (data.patient_report as any) || {};
 
   return (
-    <main className="container mx-auto px-3 md:px-4 py-6 max-w-6xl space-y-6 overflow-hidden">
+    <main className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6">
       <header className="space-y-1 animate-fade-in flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 break-words">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight break-words">{data.title || "Consultation"}</h1>
           <div className="flex flex-row items-center justify-start gap-2 mt-1">
             <p className="text-sm text-muted-foreground truncate">ID: {data.id}</p>
@@ -273,34 +273,57 @@ const Chat = () => {
             }} />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:gap-2">
+        <div className="flex flex-wrap gap-2 flex-shrink-0">
           {data.isOwner && (
             <>
               <Button variant="secondary" size="sm" onClick={onShare}>
                 <Share className="h-4 w-4 mr-2" />
                 Share
               </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="default" size="sm" className="text-red-600 bg-red-50 hover:bg-red-200">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                 <AlertDialogTitle>Delete Consultation</AlertDialogTitle>
-                 <AlertDialogDescription>
-                   This action cannot be undone. This will permanently delete this consultation and its associated data.
-                 </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          </>
+              {isMobile ? (
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <Button variant="default" size="sm" className="text-red-600 bg-red-50 hover:bg-red-200">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <DrawerHeader>
+                      <DrawerTitle>Delete Consultation</DrawerTitle>
+                      <DrawerDescription>
+                        This action cannot be undone. This will permanently delete this consultation and its associated data.
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <div className="p-4 flex gap-2">
+                      <Button variant="outline" className="flex-1" onClick={() => {}}>Cancel</Button>
+                      <Button variant="destructive" className="flex-1" onClick={onDelete}>Delete</Button>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="default" size="sm" className="text-red-600 bg-red-50 hover:bg-red-200">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Consultation</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete this consultation and its associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </>
           )}
           {(recordingUrl || stereoUrl) && (
             isMobile ? (
@@ -337,55 +360,12 @@ const Chat = () => {
               </Dialog>
             )
           )}
-          {!data.isOwner && (
-            <>
-              {(recordingUrl || stereoUrl) && (
-                isMobile ? (
-                  <Drawer open={open} onOpenChange={setOpen}>
-                    <DrawerTrigger asChild>
-                      <Button size="sm">
-                        <Play className="h-4 w-4 mr-2" />
-                        Play Recording
-                      </Button>
-                    </DrawerTrigger>
-                    <DrawerContent>
-                      <DrawerHeader>
-                        <DrawerTitle>Call Recording</DrawerTitle>
-                        <DrawerDescription>Listen to the audio from this consultation.</DrawerDescription>
-                      </DrawerHeader>
-                      <div className="p-4">{AudioShell}</div>
-                    </DrawerContent>
-                  </Drawer>
-                ) : (
-                  <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Play className="h-4 w-4 mr-2" />
-                        Play Recording
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Call Recording</DialogTitle>
-                        <DialogDescription>Listen to the audio from this consultation.</DialogDescription>
-                      </DialogHeader>
-                      {AudioShell}
-                    </DialogContent>
-                  </Dialog>
-                )
-              )}
-              <Button variant="secondary" size="sm" disabled>
-                <Share className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-            </>
-          )}
         </div>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-3">
-        <article className="lg:col-span-2 space-y-6">
-          <Card className="animate-fade-in">
+      <section className="grid gap-6 lg:grid-cols-3 min-w-0">
+        <article className="lg:col-span-2 space-y-6 min-w-0">
+          <Card className="animate-fade-in overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Transcript</CardTitle>
               {transcriptStr && (
@@ -407,14 +387,14 @@ const Chat = () => {
                 </div>
               )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               {vapiLoading ? (
                 <MessageSkeleton count={4} />
               ) : messages.length ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {messages.filter(m => m.role === 'user' || m.role === 'bot').map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[90%] break-words ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] break-words ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
                       <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
                       <div className="leading-relaxed break-words">{m.message}</div>
                     </div>

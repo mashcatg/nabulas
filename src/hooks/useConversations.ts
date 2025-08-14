@@ -30,7 +30,13 @@ export function useConversations() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "conversations", filter: `user_id=eq.${user.id}` },
-        () => queryClient.invalidateQueries({ queryKey: ["conversations", user.id] })
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+          // Also invalidate specific conversation queries if deleted
+          if (payload.eventType === 'DELETE' && payload.old?.id) {
+            queryClient.invalidateQueries({ queryKey: ["conversation", payload.old.id] });
+          }
+        }
       )
       .subscribe();
 
