@@ -193,6 +193,10 @@ export function VoiceProvider({ children }: { children: React.ReactNode }) {
       connectIntervalRef.current = null;
     }
     setConnecting(false);
+    
+    // Reset timer and transcript after call
+    setDuration(0);
+    setTranscript([]);
 
     // Persist a conversation row with metadata and trigger analysis
     if (user) {

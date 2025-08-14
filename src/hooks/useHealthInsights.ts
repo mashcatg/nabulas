@@ -28,6 +28,7 @@ export function useHealthInsights() {
               body: { userId: user.id }
             });
             queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+            queryClient.invalidateQueries({ queryKey: ['conversations'] });
             toast.success('Health insights updated with new conversation data');
           } catch (error) {
             console.error('Error auto-generating insights:', error);
@@ -53,6 +54,7 @@ export function useHealthInsights() {
       if (error) throw error;
       
       queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
       toast.success('Health insights updated successfully!');
     } catch (error) {
       console.error('Error generating health insights:', error);

@@ -261,7 +261,7 @@ const Chat = () => {
   const patient = (data.patient_report as any) || {};
 
   return (
-    <main className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6">
+    <main className="container mx-auto px-2 md:px-4 py-6 max-w-6xl space-y-6 animate-fade-in">
       <header className="space-y-1 animate-fade-in flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="min-w-0 flex-1 break-words">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight break-words">{data.title || "Consultation"}</h1>
@@ -363,8 +363,8 @@ const Chat = () => {
         </div>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-3 min-w-0">
-        <article className="lg:col-span-2 space-y-6 min-w-0">
+      <section className="grid gap-6 lg:grid-cols-3 min-w-0 w-full overflow-hidden">
+        <article className="lg:col-span-2 space-y-6 min-w-0 overflow-hidden">
           <Card className="animate-fade-in overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Transcript</CardTitle>
@@ -393,12 +393,12 @@ const Chat = () => {
               ) : messages.length ? (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {messages.filter(m => m.role === 'user' || m.role === 'bot').map((m, i) => (
-                  <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                    <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] break-words ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
-                      <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
-                      <div className="leading-relaxed break-words">{m.message}</div>
-                    </div>
-                  </div>
+                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in w-full`}>
+                     <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] break-words overflow-hidden ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
+                       <div className="opacity-70 text-xs mb-1">{m.role === 'user' ? 'You' : 'Assistant'}</div>
+                       <div className="leading-relaxed break-words overflow-wrap-anywhere">{m.message}</div>
+                     </div>
+                   </div>
                   ))}
                 </div>
               ) : (
@@ -430,7 +430,7 @@ const Chat = () => {
           </Card>
         </article>
 
-        <aside className="space-y-6">
+        <aside className="space-y-6 min-w-0 overflow-hidden">
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle>Patient Report</CardTitle>

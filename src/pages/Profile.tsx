@@ -100,7 +100,7 @@ const stats = [
   ];
 
   return (
-    <div className="container mx-auto px-2 md:px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-2 md:px-4 py-8 max-w-6xl animate-fade-in">
       <div className="space-y-6 sm:space-y-8">
         {/* Profile Header */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start max-w-full">

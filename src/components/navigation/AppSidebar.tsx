@@ -57,27 +57,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <Button
               variant="pill"
-              className="w-full b justify-start"
-              // onClick={async () => {
-              //   if (!user) {
-              //     toast({ title: "Sign in required", description: "Please sign in to create a conversation." });
-              //     return;
-              //   }
-              //   const { data, error } = await supabase
-              //     .from("conversations")
-              //     .insert({ user_id: user.id, title: "New Conversation" })
-              //     .select("id")
-              //     .maybeSingle();
-              //   if (error || !data?.id) {
-              //     console.error(error);
-              //     toast({ title: "Failed to create", description: "Could not create conversation." });
-              //     return;
-              //   }
-              //   navigate(`/chat/${data.id}`);
-              // }}
+              className="w-full justify-start"
               onClick={() => handleNavigation("/")}
             >
-              <PlusCircle /> New Consultation
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Consultation
             </Button>
           </SidebarGroupContent>
         </SidebarGroup>
